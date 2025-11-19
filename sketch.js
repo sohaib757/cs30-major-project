@@ -16,6 +16,11 @@ class Enemy {
   }
 }
 
+let pathPoints = [
+  {x: 40, y: 0},
+  {x: 40, y: 400},
+];
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
@@ -26,13 +31,7 @@ function draw() {
 }
 
 function generatePath() {
-  for (let i = 20; i < 40; i++) {
-    line(i, 0, i, height/2);
-  }
-  for (let i = 20; i < width/2; i++) {
-    line(i, height/2, i, height/2 + 20);
-  }
-  for (let i = width/2; i < width/2 + 20; i++) {
-    line(i, height/2 - 20 + 20, i, height);
-  }
+  strokeWeight(50);
+  line(pathPoints[0].x, pathPoints[0].y, pathPoints[1].x, pathPoints[1].y);
 }
+
