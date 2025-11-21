@@ -18,8 +18,20 @@ class Enemy {
   }
   
   move() {
-    this.x += 1;
-    this.y += 1;
+    for (let i = 0; i < pathPoints.length; i++) {
+      if (this.x < pathPoints[i].x) {
+        this.x += 1;
+      }
+      else if (this.y < pathPoints[i].y) {
+        this.y += 1;
+      }
+      else if (this.x > pathPoints[i].x) {
+        this.x -= 1;
+      }
+      else if (this.y > pathPoints[i].y) {
+        this.y -= 1;
+      }
+    }
   }
 }
 
@@ -46,10 +58,8 @@ function setup() {
 function draw() {
   background(220);
   generatePath();
-  for (let enemy of enemies) {
-    if (enemy.y < pathPoints[1].y) {
-      enemy.move();
-    }
+  for (let enemy of enemies) {  
+    enemy.move();  
     enemy.display();
   }
 }
