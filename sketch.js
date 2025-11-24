@@ -9,27 +9,33 @@ class Enemy {
   constructor(x, y) {
     this.x = x;
     this.y = y;
+    this.speed = 1;
+    this.radius = 10;
   }
   
   display() {
     noStroke();
     fill("green");
-    circle(this.x, this.y, 15);
+    circle(this.x, this.y, this.radius * 2);
   }
   
   move() {
     for (let i = 0; i < pathPoints.length; i++) {
-      if (this.x < pathPoints[i].x) {
-        this.x += 1;
-      }
-      else if (this.y < pathPoints[i].y) {
-        this.y += 1;
-      }
-      else if (this.x > pathPoints[i].x) {
-        this.x -= 1;
-      }
-      else if (this.y > pathPoints[i].y) {
-        this.y -= 1;
+      let pathX = pathPoints[i].x;
+      let pathY = pathPoints[i].y;
+      if (this.x !== pathX || this.y !== pathY) {
+        if (this.x < pathX) {
+          this.x += this.speed;
+        }
+        else if (this.x > pathX) {
+          this.x -= this.speed;
+        }
+        if (this.y > pathY) {
+          this.y -= this.speed;
+        }
+        else if (this.y < pathY) {
+          this.y += this.speed;
+        }
       }
     }
   }
