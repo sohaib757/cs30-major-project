@@ -23,7 +23,7 @@ class Enemy {
     for (let i = 1; i < pathPoints.length; i++) {
       let pathX = pathPoints[i].x;
       let pathY = pathPoints[i].y;
-      if (this.x !== pathX && this.y !== pathY) {
+      if (this.x !== pathX || this.y !== pathY) {
         if (this.x < pathX) {
           this.x += this.speed;
         }
@@ -73,7 +73,7 @@ function draw() {
 
 function generatePath() {
   stroke("black");
-  strokeWeight(50);
+  strokeWeight(60);
   for (let i = 0; i < 6; i++) {
     line(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
   }
