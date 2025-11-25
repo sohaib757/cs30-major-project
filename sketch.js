@@ -20,10 +20,10 @@ class Enemy {
   }
   
   move() {
-    for (let i = 0; i < pathPoints.length; i++) {
+    for (let i = 1; i < pathPoints.length; i++) {
       let pathX = pathPoints[i].x;
       let pathY = pathPoints[i].y;
-      if (this.x !== pathX || this.y !== pathY) {
+      if (this.x !== pathX && this.y !== pathY) {
         if (this.x < pathX) {
           this.x += this.speed;
         }
@@ -36,6 +36,7 @@ class Enemy {
         else if (this.y < pathY) {
           this.y += this.speed;
         }
+        break;
       }
     }
   }
