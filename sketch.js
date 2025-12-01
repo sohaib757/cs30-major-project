@@ -42,6 +42,11 @@ class Enemy {
   }
 }
 
+class Tower {
+  constructor(x,y) {
+    
+  }
+}
 
 let pathPoints = [
   {x: 40, y: 0},
@@ -50,22 +55,27 @@ let pathPoints = [
   {x: 500, y: 600},
   {x: 800, y: 600},
   {x: 800, y: 200},
-  {x: 1000, y: 200}
+  {x: 1000, y: 200},
+  {x: 1000, y: 500},
+  {x: 1500, y: 500}
 ];
 
+let lastSpawned = 0;
+let spawnDuration = 1000;
 let enemies = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  for (let n = 0; n < 10; n ++) {
-    let aEnemy = new Enemy(pathPoints[0].x, pathPoints[0].y);
-    enemies.push(aEnemy);
-  }
 }
 
 function draw() {
   background(220);
   generatePath();
+  if (millis() > lastSpawned + spawnDuration && enemies.length < 5) {
+    let aEnemy = new Enemy(pathPoints[0].x, pathPoints[0].y);
+    enemies.push(aEnemy);
+    lastSpawned = millis();
+  }
   for (let enemy of enemies) {  
     enemy.move();  
     enemy.display();
@@ -75,7 +85,7 @@ function draw() {
 function generatePath() {
   stroke("black");
   strokeWeight(60);
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 8; i++) {
     line(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
   }
 }
