@@ -11,6 +11,7 @@ class Enemy {
     this.y = y;
     this.speed = 1;
     this.radius = 10;
+    this.nextPointIndex = 1;
   }
   
   display() {
@@ -20,27 +21,27 @@ class Enemy {
   }
   
   move() {
-    for (let i = 1; i < pathPoints.length; i++) {
-      let pathX = pathPoints[i].x;
-      let pathY = pathPoints[i].y;
-      if (this.x !== pathX || this.y !== pathY) {
-        if (this.x < pathX) {
-          this.x += this.speed;
-        }
-        else if (this.x > pathX) {
-          this.x -= this.speed;
-        }
-        if (this.y > pathY) {
-          this.y -= this.speed;
-        }
-        else if (this.y < pathY) {
-          this.y += this.speed;
-        }
-        break;
+    if (this.nextPointIndex < pathPoints.length) {
+      let nextPoint = pathPoints[this.nextPointIndex];
+      if (this.x < nextPoint.x) {
+        this.x += this.speed;
+      }
+      else if (this.x > nextPoint.x) {
+        this.x -= this.speed;
+      }
+      if (this.y > nextPoint.y) {
+        this.y -= this.speed;
+      }
+      else if (this.y < nextPoint.y) {
+        this.y += this.speed;
+      }
+      if (this.x === nextPoint.x && this.y === nextPoint.y) {
+        this.nextPointIndex += 1;
       }
     }
   }
 }
+
 
 let pathPoints = [
   {x: 40, y: 0},
