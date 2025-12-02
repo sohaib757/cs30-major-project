@@ -16,7 +16,7 @@ class Enemy {
   
   display() {
     noStroke();
-    fill("green");
+    fill("red");
     circle(this.x, this.y, this.radius * 2);
   }
   
@@ -44,7 +44,15 @@ class Enemy {
 
 class Tower {
   constructor(x,y) {
-    
+    this.x = x;
+    this.y = y;
+    this.radius = 20;
+  }
+
+  display() {
+    noStroke();
+    fill("blue");
+    circle(this.x, this.y, this.radius * 2);
   }
 }
 
@@ -63,6 +71,7 @@ let pathPoints = [
 let lastSpawned = 0;
 let spawnDuration = 1000;
 let enemies = [];
+let towers = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -71,6 +80,9 @@ function setup() {
 function draw() {
   background(220);
   generatePath();
+  for (let tower of towers) {
+    tower.display();
+  }
   if (millis() > lastSpawned + spawnDuration && enemies.length < 5) {
     let aEnemy = new Enemy(pathPoints[0].x, pathPoints[0].y);
     enemies.push(aEnemy);
@@ -87,6 +99,13 @@ function generatePath() {
   strokeWeight(60);
   for (let i = 0; i < 8; i++) {
     line(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
+  }
+}
+
+function mouseClicked() {
+  if (towers.length < 5) {
+    let aTower = new Tower(mouseX, mouseY);
+    towers.push(aTower);
   }
 }
 
