@@ -5,6 +5,8 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
+const PATHS = 8;
+
 class Enemy {
   constructor(x, y) {
     this.x = x;
@@ -52,7 +54,9 @@ class Tower {
   display() {
     noStroke();
     fill("blue");
-    circle(this.x, this.y, this.radius * 2);
+    for (let i = 0; i < PATHS; i++) {
+      circle(this.x, this.y, this.radius * 2);
+    }
   }
 }
 
@@ -97,7 +101,7 @@ function draw() {
 function generatePath() {
   stroke("black");
   strokeWeight(60);
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < PATHS; i++) {
     line(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
   }
 }
