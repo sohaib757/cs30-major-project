@@ -55,7 +55,9 @@ class Tower {
     noStroke();
     fill("blue");
     for (let i = 0; i < PATHS; i++) {
-      circle(this.x, this.y, this.radius * 2);
+      if (pathPoints[i].x === pathPoints[i + 1].x && this.x - this.radius * 2.5 > pathPoints[i].x && (this.y + this.radius * 2.5 < pathPoints[i+1].y || this.y - this.radius * 2.5 > pathPoints[i + 1].y)) {
+        circle(this.x, this.y, this.radius * 2);
+      }
     }
   }
 }
