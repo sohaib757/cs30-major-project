@@ -6,6 +6,7 @@
 // - describe what you did to take this project "above and beyond"
 
 const PATHS = 8;
+const PATH_SIZE = 50;
 
 class Enemy {
   constructor(x, y) {
@@ -31,10 +32,10 @@ class Enemy {
       else if (this.x > nextPoint.x) {
         this.x -= this.speed;
       }
-      if (this.y > nextPoint.y) {
+      if (this.y > nextPoint.y + PATH_SIZE/2) {
         this.y -= this.speed;
       }
-      else if (this.y < nextPoint.y) {
+      else if (this.y < nextPoint.y + PATH_SIZE/2) {
         this.y += this.speed;
       }
       if (this.x === nextPoint.x && this.y === nextPoint.y) {
@@ -55,7 +56,7 @@ class Tower {
     noStroke();
     fill("blue");
     for (let i = 0; i < PATHS; i++) {
-      if (pathPoints[i].x === pathPoints[i + 1].x && this.x - this.radius * 2.5 > pathPoints[i].x && (this.y + this.radius * 2.5 < pathPoints[i+1].y || this.y - this.radius * 2.5 > pathPoints[i + 1].y)) {
+      if (pathPoints[i].x) {
         circle(this.x, this.y, this.radius * 2);
       }
     }
@@ -74,6 +75,7 @@ let pathPoints = [
   {x: 1500, y: 500}
 ];
 
+let canPlace;
 let lastSpawned = 0;
 let spawnDuration = 1000;
 let enemies = [];
@@ -90,7 +92,7 @@ function draw() {
     tower.display();
   }
   if (millis() > lastSpawned + spawnDuration && enemies.length < 5) {
-    let aEnemy = new Enemy(pathPoints[0].x, pathPoints[0].y);
+    let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
     enemies.push(aEnemy);
     lastSpawned = millis();
   }
@@ -101,10 +103,17 @@ function draw() {
 }
 
 function generatePath() {
-  stroke("black");
-  strokeWeight(60);
+  fill("black");
   for (let i = 0; i < PATHS; i++) {
-    line(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x, pathPoints[i+1].y);
+    if (pathPoints[i].x !== pathPoints[i+1].x) {
+      rect(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x - pathPoints[i].x, PATH_SIZE);
+    }
+    else if (pathPoints[i].y < pathPoints[i+1].y) {
+      rect(pathPoints[i].x, pathPoints[i].y, PATH_SIZE, pathPoints[i+1].y - pathPoints[i].y);
+    }
+    else if (pathPoints[i].y > pathPoints[i+1].y) {
+      rect(pathPoints[i].x, pathPoints[i+1].y, PATH_SIZE, pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE);
+    }
   }
 }
 
