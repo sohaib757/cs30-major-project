@@ -26,10 +26,10 @@ class Enemy {
   move() {
     if (this.nextPointIndex < pathPoints.length) {
       let nextPoint = pathPoints[this.nextPointIndex];
-      if (this.x < nextPoint.x) {
+      if (this.x < nextPoint.x + PATH_SIZE/2) {
         this.x += this.speed;
       }
-      else if (this.x > nextPoint.x) {
+      else if (this.x > nextPoint.x + PATH_SIZE/2) {
         this.x -= this.speed;
       }
       if (this.y > nextPoint.y + PATH_SIZE/2) {
@@ -38,7 +38,7 @@ class Enemy {
       else if (this.y < nextPoint.y + PATH_SIZE/2) {
         this.y += this.speed;
       }
-      if (this.x === nextPoint.x && this.y === nextPoint.y) {
+      if (this.x === nextPoint.x + PATH_SIZE/2 && this.y === nextPoint.y + PATH_SIZE/2) {
         this.nextPointIndex += 1;
       }
     }
