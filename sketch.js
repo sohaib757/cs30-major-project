@@ -55,11 +55,27 @@ class Tower {
   display() {
     noStroke();
     fill("blue");
-    for (let i = 0; i < PATHS; i++) {
-      if (pathPoints[i].x) {
-        circle(this.x, this.y, this.radius * 2);
-      }
-    }
+    circle(this.x, this.y, this.radius * 2);
+    fill("grey");
+    rect(this.x - this.radius * 1.5, this.y - this.radius/3, 15, 10);
+  }
+}
+
+class Bullet {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+    this.radius = 3;
+  }
+
+  display() {
+    noStroke();
+    fill("orange");
+    circle(this.x, this.y, this.radius * 2);
+  }
+
+  update() {
+    this.x --;
   }
 }
 
@@ -75,11 +91,13 @@ let pathPoints = [
   {x: 1500, y: 500}
 ];
 
-let canPlace;
+let lastShot = 0;
+let shotDuration = 2000;
 let lastSpawned = 0;
 let spawnDuration = 1000;
 let enemies = [];
 let towers = [];
+let bulletArray = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -90,6 +108,11 @@ function draw() {
   generatePath();
   for (let tower of towers) {
     tower.display();
+    if (millis() > lastShot + shotDuration) {
+      let bullet = new Bullet(tower.x - tower.radius, tower.y);
+      bulletArray.push(bullet);
+      lastShot = millis();
+    }
   }
   if (millis() > lastSpawned + spawnDuration && enemies.length < 5) {
     let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
@@ -99,6 +122,10 @@ function draw() {
   for (let enemy of enemies) {  
     enemy.move();  
     enemy.display();
+  }
+  for (let bullet of bulletArray) {
+    bullet.update();
+    bullet.display();
   }
 }
 
@@ -123,4 +150,5 @@ function mouseClicked() {
     towers.push(aTower);
   }
 }
+
 
