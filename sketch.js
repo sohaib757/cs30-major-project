@@ -57,7 +57,8 @@ class Tower {
     fill("blue");
     circle(this.x, this.y, this.radius * 2);
     fill("grey");
-    rect(this.x - this.radius * 1.5, this.y - this.radius/3, 15, 10);
+    rectMode(CENTER);
+    rect(this.x - this.radius, this.y , 15, 10);
   }
 }
 
@@ -130,6 +131,7 @@ function draw() {
 }
 
 function generatePath() {
+  rectMode(CORNER);
   fill("black");
   for (let i = 0; i < PATHS; i++) {
     if (pathPoints[i].x !== pathPoints[i+1].x) {
