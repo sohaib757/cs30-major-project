@@ -5,6 +5,7 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
+const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = Matter;
 const PATHS = 8;
 const PATH_SIZE = 50;
 
@@ -99,13 +100,18 @@ let spawnDuration = 1000;
 let enemies = [];
 let towers = [];
 let bulletArray = [];
+let mapImage;
+
+function preload() {
+  mapImage = loadImage("tdmap.jpg");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
 
 function draw() {
-  background(220);
+  background(mapImage);
   generatePath();
   for (let tower of towers) {
     tower.display();
@@ -127,6 +133,16 @@ function draw() {
   for (let bullet of bulletArray) {
     bullet.update();
     bullet.display();
+  }
+  for (let bullet of bulletArray) {
+    for (let enemy of enemies) {
+      let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
+      let theEnemy = Bodies.circle(enemy.x, enemy.y, enemy.radius);
+      if (Matter.Collision.collides(theBullet, theEnemy) !== null){
+        let index = enemies.indexOf(enemy);
+        enemies.splice(index,1);
+      }
+    }
   }
 }
 
