@@ -81,6 +81,18 @@ class Bullet {
   }
 }
 
+class Stone {
+  constructor(x,y) {
+    this.x = x;
+    this.y = y;
+    this.dw = random(50,70);
+    this.dh = random(50,70);
+  }
+  display() {
+    image(stoneImage, this.x, this.y, this.dw, this.dh);
+  }
+}
+
 let pathPoints = [
   {x: 40, y: 0},
   {x: 40, y: 400},
@@ -100,19 +112,25 @@ let spawnDuration = 1000;
 let enemies = [];
 let towers = [];
 let bulletArray = [];
+let stonesArray = [];
 let mapImage;
 
 function preload() {
-  mapImage = loadImage("tdmap.jpg");
+  mapImage = loadImage("tdmap.webp");
+  stoneImage = loadImage("rock.png");
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  generateStones();
 }
 
 function draw() {
-  background(mapImage);
+  background("green");
   generatePath();
+  for (let stone of stonesArray) {
+    stone.display();
+  }
   for (let tower of towers) {
     tower.display();
     if (millis() > lastShot + shotDuration) {
@@ -166,6 +184,13 @@ function mouseClicked() {
   if (towers.length < 5) {
     let aTower = new Tower(mouseX, mouseY);
     towers.push(aTower);
+  }
+}
+
+function generateStones() {
+  for (let i = 0; i < 8; i ++) {
+    theStone = new Stone(random(width), random(height));
+    stonesArray.push(theStone);
   }
 }
 
