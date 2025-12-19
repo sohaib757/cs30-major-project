@@ -6,7 +6,7 @@
 // - describe what you did to take this project "above and beyond"
 
 const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = Matter;
-const PATHS = 8;
+const PATHS = 9;
 const PATH_SIZE = 50;
 
 class Enemy {
@@ -93,17 +93,7 @@ class Stone {
   }
 }
 
-let pathPoints = [
-  {x: 40, y: 0},
-  {x: 40, y: 400},
-  {x: 500, y: 400},
-  {x: 500, y: 600},
-  {x: 800, y: 600},
-  {x: 800, y: 200},
-  {x: 1000, y: 200},
-  {x: 1000, y: 500},
-  {x: 1500, y: 500}
-];
+let pathPoints;
 
 let lastShot = 0;
 let shotDuration = 2000;
@@ -122,6 +112,19 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  pathPoints =[
+    {x: 40, y: 0},
+    {x: 40, y: 400},
+    {x: 500, y: 400},
+    {x: 500, y: 600},
+    {x: 800, y: 600},
+    {x: 800, y: 200},
+    {x: 1000, y: 200},
+    {x: 1000, y: 500},
+    {x: 1500, y: 500},
+    {x: 1500, y: height}
+  ];
+
   generateStones();
 }
 
