@@ -51,6 +51,7 @@ class Tower {
     this.x = x;
     this.y = y;
     this.radius = 20;
+    this.lastShot = 0;
   }
 
   display() {
@@ -95,7 +96,6 @@ class Stone {
 
 let pathPoints;
 
-let lastShot = 0;
 let shotDuration = 2000;
 let lastSpawned = 0;
 let spawnDuration = 1000;
@@ -136,10 +136,10 @@ function draw() {
   }
   for (let tower of towers) {
     tower.display();
-    if (millis() > lastShot + shotDuration) {
+    if (millis() > tower.lastShot + shotDuration) {
       let bullet = new Bullet(tower.x - tower.radius, tower.y);
       bulletArray.push(bullet);
-      lastShot = millis();
+      tower.lastShot = millis();
     }
   }
   if (millis() > lastSpawned + spawnDuration && enemies.length < 5) {
