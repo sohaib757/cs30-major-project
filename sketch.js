@@ -173,33 +173,33 @@ function generatePath() {
   for (let i = 0; i < PATHS; i++) {
     if (pathPoints[i].x !== pathPoints[i+1].x) {
       rect(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x - pathPoints[i].x, PATH_SIZE);
-      let thePath = Bodies.rectangle(pathPoints[i].x, pathPoints[i].y + PATH_SIZE/2, pathPoints[i+1].x - pathPoints[i].x, PATH_SIZE + PATH_SIZE);
+      let thePath = Bodies.rectangle(pathPoints[i].x + (pathPoints[i+1].x - pathPoints[i].x)/2, pathPoints[i].y + PATH_SIZE/2, Math.abs(pathPoints[i+1].x - pathPoints[i].x), PATH_SIZE);
       for (let tower of towers) {
         let theTower = Bodies.circle(tower.x, tower.y, tower.radius);
         if (Matter.Collision.collides(thePath, theTower) !== null){
-          let index = towers.indexOf(theTower);
+          let index = towers.indexOf(tower);
           towers.splice(index,1);
         }
       }
     }
     else if (pathPoints[i].y < pathPoints[i+1].y) {
       rect(pathPoints[i].x, pathPoints[i].y, PATH_SIZE, pathPoints[i+1].y - pathPoints[i].y);
-      let thePath = Bodies.rectangle(pathPoints[i].x, pathPoints[i].y + PATH_SIZE/2, PATH_SIZE + PATH_SIZE, pathPoints[i+1].y - pathPoints[i].y + PATH_SIZE/2);
+      let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i].y + (pathPoints[i+1].y - pathPoints[i].y)/2, PATH_SIZE, Math.abs(pathPoints[i+1].y - pathPoints[i].y));
       for (let tower of towers) {
         let theTower = Bodies.circle(tower.x, tower.y, tower.radius);
         if (Matter.Collision.collides(thePath, theTower) !== null){
-          let index = towers.indexOf(theTower);
+          let index = towers.indexOf(tower);
           towers.splice(index,1);
         }
       }
     }
     else if (pathPoints[i].y > pathPoints[i+1].y) {
       rect(pathPoints[i].x, pathPoints[i+1].y, PATH_SIZE, pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE);
-      let thePath = Bodies.rectangle(pathPoints[i].x, pathPoints[i+1].y + PATH_SIZE/2, PATH_SIZE + PATH_SIZE, pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE/2);
+      let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i+1].y + (pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE)/2, PATH_SIZE, Math.abs(pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE));
       for (let tower of towers) {
         let theTower = Bodies.circle(tower.x, tower.y, tower.radius);
         if (Matter.Collision.collides(thePath, theTower) !== null){
-          let index = towers.indexOf(theTower);
+          let index = towers.indexOf(tower);
           towers.splice(index,1);
         }
       }
@@ -220,5 +220,3 @@ function generateStones() {
     stonesArray.push(theStone);
   }
 }
-
-
