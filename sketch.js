@@ -95,7 +95,6 @@ class Stone {
 }
 
 let pathPoints;
-
 let shotDuration = 2000;
 let lastSpawned = 0;
 let spawnDuration = 1000;
@@ -104,6 +103,9 @@ let towers = [];
 let bulletArray = [];
 let stonesArray = [];
 let mapImage;
+let currentWave = 0;
+let totalSpawned = 0;
+let maxToSpawn = 0;
 
 function preload() {
   mapImage = loadImage("tdmap.webp");
@@ -126,6 +128,7 @@ function setup() {
   ];
 
   generateStones();
+  startWave();
 }
 
 function draw() {
@@ -142,10 +145,11 @@ function draw() {
       tower.lastShot = millis();
     }
   }
-  if (millis() > lastSpawned + spawnDuration && enemies.length < 5) {
+  if (millis() > lastSpawned + spawnDuration && totalSpawned < maxToSpawn) {
     let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
     enemies.push(aEnemy);
     lastSpawned = millis();
+    totalSpawned ++;
   }
   for (let enemy of enemies) {  
     enemy.move();  
@@ -154,16 +158,27 @@ function draw() {
   for (let bullet of bulletArray) {
     bullet.update();
     bullet.display();
+    if (bullet.x > width || bullet.x < 0 || bullet.y > height || bullet.y < 0) {
+      let index = bulletArray.indexOf(bullet);
+      bulletArray.splice(index, 1);
+    }
   }
   for (let bullet of bulletArray) {
     for (let enemy of enemies) {
       let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
       let theEnemy = Bodies.circle(enemy.x, enemy.y, enemy.radius);
       if (Matter.Collision.collides(theBullet, theEnemy) !== null){
-        let index = enemies.indexOf(enemy);
-        enemies.splice(index,1);
+        let indexB = bulletArray.indexOf(bullet);
+        bulletArray.splice(indexB, 1);
+        let indexE= enemies.indexOf(enemy);
+        enemies.splice(indexE, 1);
       }
     }
+  }
+
+  if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
+    currentWave ++;
+    startWave();
   }
 }
 
@@ -205,6 +220,13 @@ function generatePath() {
       }
     }
   }
+}
+
+function startWave() {
+  currentWave ++;
+  totalSpawned = 0;
+  maxToSpawn = random(5, currentWave + 4);
+  lastSpawned = millis();
 }
 
 function mouseClicked() {
