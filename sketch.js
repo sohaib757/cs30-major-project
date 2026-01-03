@@ -52,23 +52,35 @@ class Tower {
     this.y = y;
     this.radius = 20;
     this.lastShot = 0;
+    this.range = 150;
+    this.direction = createVector(-1,0)
   }
 
   display() {
     noStroke();
     fill("blue");
     circle(this.x, this.y, this.radius * 2);
+    
+    push();
+    translate(this.x,this.y);
+    rotate(this.direction.heading());
     fill("grey");
     rectMode(CENTER);
-    rect(this.x - this.radius, this.y , 15, 10);
+    rect(this.radius, 0, 15, 10);
+    pop();
   }
 }
 
 class Bullet {
-  constructor(x,y) {
+  constructor(x,y,range,dx,dy) {
     this.x = x;
     this.y = y;
     this.radius = 3;
+    this.range = range;
+    this.startX = x;
+    this.startY = y;
+    this.dx = dx;
+    this.dy = dy;
   }
 
   display() {
@@ -78,7 +90,10 @@ class Bullet {
   }
 
   update() {
-    this.x --;
+    if (dist(this.x, this.y, this.startX, this.startY) < this.range){
+      this.x += this.dx;
+      this.y += this.dy;
+    }
   }
 }
 
@@ -86,11 +101,11 @@ class Stone {
   constructor(x,y) {
     this.x = x;
     this.y = y;
-    this.dw = random(50,70);
-    this.dh = random(50,70);
+    this.w = random(50,70);
+    this.h = random(50,70);
   }
   display() {
-    image(stoneImage, this.x, this.y, this.dw, this.dh);
+    image(stoneImage, this.x, this.y, this.w, this.h);
   }
 }
 
@@ -106,6 +121,7 @@ let mapImage;
 let currentWave = 0;
 let totalSpawned = 0;
 let maxToSpawn = 0;
+let selectedTower = null;
 
 function preload() {
   mapImage = loadImage("tdmap.webp");
@@ -140,7 +156,9 @@ function draw() {
   for (let tower of towers) {
     tower.display();
     if (millis() > tower.lastShot + shotDuration) {
-      let bullet = new Bullet(tower.x - tower.radius, tower.y);
+      let bullet = new Bullet(tower.x, tower.y, tower.range, tower.direction.x, tower.direction.y);
+      bullet.x += tower.direction.x * 10;
+      bullet.y += tower.direction.y * 10;
       bulletArray.push(bullet);
       tower.lastShot = millis();
     }
@@ -159,6 +177,10 @@ function draw() {
     bullet.update();
     bullet.display();
     if (bullet.x > width || bullet.x < 0 || bullet.y > height || bullet.y < 0) {
+      let index = bulletArray.indexOf(bullet);
+      bulletArray.splice(index, 1);
+    }
+    else if (dist(bullet.x, bullet.y, bullet.startX, bullet.startY) >= bullet.range){
       let index = bulletArray.indexOf(bullet);
       bulletArray.splice(index, 1);
     }
@@ -233,6 +255,7 @@ function mouseClicked() {
   if (towers.length < 5) {
     let aTower = new Tower(mouseX, mouseY);
     towers.push(aTower);
+    selectedTower = aTower;
   }
 }
 
@@ -240,5 +263,14 @@ function generateStones() {
   for (let i = 0; i < 8; i ++) {
     theStone = new Stone(random(width), random(height));
     stonesArray.push(theStone);
+  }
+}
+
+function keyPressed() {
+  if (selectedTower && (key === 'r' || key === 'R')) {
+      selectedTower.direction.rotate(0.05);
+  }
+  else if (selectedTower && (key === 'l' || key === 'L')) {
+      selectedTower.direction.rotate(-0.05);
   }
 }
