@@ -52,7 +52,7 @@ class Tower {
     this.y = y;
     this.radius = 20;
     this.lastShot = 0;
-    this.range = 150;
+    this.range = 200;
     this.direction = createVector(-1,0)
   }
 
