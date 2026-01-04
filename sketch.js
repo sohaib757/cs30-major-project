@@ -3,8 +3,8 @@
 // Date
 //
 // Extra for Experts:
-// - implemented matter.js collision detection
-// - used vectors
+// - implemented matter.js for collision detection
+// - used vectors for tower direction
 
 // constants
 const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = Matter;
@@ -300,20 +300,56 @@ function mouseClicked() {
   }
 }
 
-// places stone images on the map with random sizes
 function generateStones() {
-  for (let i = 0; i < 8; i ++) {
-    theStone = new Stone(random(width), random(height));
+  stonesArray = [];
+  let totalWanted = 10;
+  while (stonesArray.length < totalWanted) {
+    // places stone images on the map with random sizes
+    let theStone = new Stone(0, 0);
+    theStone.x = random(0, width - theStone.w);
+    theStone.y = random(0, height - theStone.h);
     stonesArray.push(theStone);
-  }
-}
-
-// dictates how the tower will be rotated based on what key is pressed
-function keyPressed() {
-  if (selectedTower && (key === 'r' || key === 'R')) {
-      selectedTower.direction.rotate(0.05);
-  }
-  else if (selectedTower && (key === 'l' || key === 'L')) {
-      selectedTower.direction.rotate(-0.05);
+    //prevents stones from spawning on eachother
+    let theStoneBody = Bodies.rectangle(theStone.x + theStone.w/2, theStone.y + theStone.h/2, theStone.w, theStone.h);
+    for (let otherStone of stonesArray) {
+      let theOtherStone = Bodies.rectangle(otherStone.x + otherStone.w/2, otherStone.y + otherStone.h/2, otherStone.w, otherStone.h);
+      if (otherStone!== theStone) {
+        if (Matter.Collision.collides(theOtherStone, theStoneBody) !== null) {
+          stonesArray.pop();
+        }
+      }
+    }
+    // prevents stones from spawning on the pathway
+    for (let i = 0; i < PATHS; i++) {
+      for (let stone of stonesArray) {
+        // checks the lines that go from right to left or left to right
+        if (pathPoints[i].x !== pathPoints[i+1].x) {
+          let thePath = Bodies.rectangle(pathPoints[i].x + (pathPoints[i+1].x - pathPoints[i].x)/2, pathPoints[i].y + PATH_SIZE/2, Math.abs(pathPoints[i+1].x - pathPoints[i].x), PATH_SIZE);
+          let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
+          if (Matter.Collision.collides(thePath, theStone) !== null) {
+            let index = stonesArray.indexOf(stone);
+            stonesArray.splice(index,1);
+          }
+        }
+        // checks the lines that go up
+        else if (pathPoints[i].y < pathPoints[i+1].y) {
+          let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i].y + (pathPoints[i+1].y - pathPoints[i].y)/2, PATH_SIZE, Math.abs(pathPoints[i+1].y - pathPoints[i].y));
+          let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
+          if (Matter.Collision.collides(thePath, theStone) !== null) {
+            let index = stonesArray.indexOf(stone);
+            stonesArray.splice(index,1);
+          }
+        }
+        // checks the lines that go up
+        else if (pathPoints[i].y > pathPoints[i+1].y) {
+          let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i+1].y + (pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE)/2, PATH_SIZE, Math.abs(pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE));
+          let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
+          if (Matter.Collision.collides(thePath, theStone) !== null) {
+            let index = stonesArray.indexOf(stone);
+            stonesArray.splice(index,1);
+          }
+        }
+      }
+    }
   }
 }
