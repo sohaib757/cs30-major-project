@@ -67,7 +67,7 @@ class Tower {
     noStroke();
     fill("blue");
     circle(this.x, this.y, this.radius * 2);
-    
+  
     // adjusts how the muzzle of the tower is drawn based on how the user decides to rotate the tower
     push();
     translate(this.x,this.y);
@@ -351,5 +351,15 @@ function generateStones() {
         }
       }
     }
+  }
+}
+
+// rotates the tower left or right depending on what button is clicked
+function keyPressed() {
+  if (selectedTower && (key === 'r' || key === 'R')) {
+      selectedTower.direction.rotate(0.05);
+  }
+  else if (selectedTower && (key === 'l' || key === 'L')) {
+      selectedTower.direction.rotate(-0.05);
   }
 }
