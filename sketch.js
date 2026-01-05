@@ -1,15 +1,16 @@
-// Tower Defense
+// turret Defense
 // Sohaib Hassan
 // Date
 //
 // Extra for Experts:
 // - implemented matter.js for collision detection
-// - used vectors for tower direction
+// - used vectors for turret direction
 
 // constants
 const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = Matter;
 const PATHS = 9;
 const PATH_SIZE = 50;
+const BASE_HP = 1000;
 
 // classes
 class Enemy {
@@ -20,12 +21,16 @@ class Enemy {
     this.speed = 1;
     this.radius = 10;
     this.nextPointIndex = 1;
+    this.hp = currentWave + 5;
   }
   
   display() {
     noStroke();
     fill("red");
     circle(this.x, this.y, this.radius * 2);
+    rectMode(CENTER);
+    fill("green");
+    rect(this.x, this.y - 15, this.hp * 4, 5);
   }
   
   // controls how enemies move along the path
@@ -49,18 +54,23 @@ class Enemy {
       }
     }
   }
+
+  // removes enemy off the screen if all hp is lost
+  isDead() {
+    return this.hp <= 0;
+  }
 }
 
-class Tower {
-  // creates a tower that takes in a coordinate
+class Turret {
+  // creates a turret that takes in a coordinate
   constructor(x,y) {
     this.x = x;
     this.y = y;
     this.radius = 20;
     this.lastShot = 0;
     this.range = 200;
-    // tower intially faces the left direction
-    this.direction = createVector(-1,0)
+    // turret intially faces the left direction
+    this.direction = createVector(-1,0);
   }
 
   display() {
@@ -68,7 +78,7 @@ class Tower {
     fill("blue");
     circle(this.x, this.y, this.radius * 2);
   
-    // adjusts how the muzzle of the tower is drawn based on how the user decides to rotate the tower
+    // adjusts how the muzzle of the turret is drawn based on how the user decides to rotate the turret
     push();
     translate(this.x,this.y);
     rotate(this.direction.heading());
@@ -90,6 +100,7 @@ class Bullet {
     this.startY = y;
     this.dx = dx;
     this.dy = dy;
+    this.dmg = 5;
   }
 
   display() {
@@ -98,7 +109,7 @@ class Bullet {
     circle(this.x, this.y, this.radius * 2);
   }
 
-  // keeps the bullets within the tower's range
+  // keeps the bullets within the turret's range
   update() {
     if (dist(this.x, this.y, this.startX, this.startY) < this.range){
       this.x += this.dx;
@@ -133,7 +144,7 @@ let selectedTower = null;
 
 // arrays
 let enemies = [];
-let towers = [];
+let turrets = [];
 let bulletArray = [];
 let stonesArray = [];
 
@@ -187,16 +198,16 @@ function draw() {
       stone.display();
     }
     
-    // displays all towers within the array
-    for (let tower of towers) {
-      tower.display();
+    // displays all turrets within the array
+    for (let turret of turrets) {
+      turret.display();
       // controls how often bullets are released
-      if (millis() > tower.lastShot + shotDuration) {
-        let bullet = new Bullet(tower.x, tower.y, tower.range, tower.direction.x, tower.direction.y);
-        bullet.x += tower.direction.x * 10;
-        bullet.y += tower.direction.y * 10;
+      if (millis() > turret.lastShot + shotDuration) {
+        let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x, turret.direction.y);
+        bullet.x += turret.direction.x * 10;
+        bullet.y += turret.direction.y * 10;
         bulletArray.push(bullet);
-        tower.lastShot = millis();
+        turret.lastShot = millis();
       }
     }
   
@@ -212,6 +223,10 @@ function draw() {
     for (let enemy of enemies) {  
       enemy.move();  
       enemy.display();
+      if (enemy.isDead()) {
+        let index = enemies.indexOf(enemy);
+        enemies.splice(index, 1);
+      }
     }
   
     // displays and moves bullets
@@ -223,14 +238,14 @@ function draw() {
         let index = bulletArray.indexOf(bullet);
         bulletArray.splice(index, 1);
       }
-      // removes a bullet after it exceeds the tower's range
+      // removes a bullet after it exceeds the turret's range
       else if (dist(bullet.x, bullet.y, bullet.startX, bullet.startY) >= bullet.range){
         let index = bulletArray.indexOf(bullet);
         bulletArray.splice(index, 1);
       }
     }
 
-    // controls the tower and bullet collisions
+    // controls the turret and bullet collisions
     for (let bullet of bulletArray) {
       for (let enemy of enemies) {
         let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
@@ -238,8 +253,7 @@ function draw() {
         if (Matter.Collision.collides(theBullet, theEnemy) !== null){
           let indexB = bulletArray.indexOf(bullet);
           bulletArray.splice(indexB, 1);
-          let indexE = enemies.indexOf(enemy);
-          enemies.splice(indexE, 1);
+          enemy.hp -= bullet.dmg;
         }
       }
     }
@@ -248,6 +262,17 @@ function draw() {
     if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
       currentWave ++;
       startWave();
+    }
+
+    // prevents turrets from being placed on top of eachother
+    for (let i = 0; i < turrets.length - 1; i++) {
+      let theTurret = Bodies.circle(turrets[i].x, turrets[i].y, turrets[i].radius);
+      for (let j = i; j < turrets.length - 1; j++) {
+        let otherTurret = Bodies.circle(turrets[j].x, turrets[j].y, turrets[j].radius);
+        if (Matter.Collision.collides(otherTurret, theTurret) !== null){
+          turrets.splice(turrets[j], 1);
+        }
+      }
     }
   }
 }
@@ -260,39 +285,39 @@ function generatePath() {
     // creates the lines that go from right to left or left to right
     if (pathPoints[i].x !== pathPoints[i+1].x) {
       rect(pathPoints[i].x, pathPoints[i].y, pathPoints[i+1].x - pathPoints[i].x, PATH_SIZE);
-      // prevents the player from placing a tower on the path
+      // prevents the player from placing a turret on the path
       let thePath = Bodies.rectangle(pathPoints[i].x + (pathPoints[i+1].x - pathPoints[i].x)/2, pathPoints[i].y + PATH_SIZE/2, Math.abs(pathPoints[i+1].x - pathPoints[i].x), PATH_SIZE);
-      for (let tower of towers) {
-        let theTower = Bodies.circle(tower.x, tower.y, tower.radius);
-        if (Matter.Collision.collides(thePath, theTower) !== null){
-          let index = towers.indexOf(tower);
-          towers.splice(index,1);
+      for (let turret of turrets) {
+        let theTurret = Bodies.circle(turret.x, turret.y, turret.radius);
+        if (Matter.Collision.collides(thePath, theTurret) !== null){
+          let index = turrets.indexOf(turret);
+          turrets.splice(index,1);
         }
       }
     }
     // creates the lines that go up
     else if (pathPoints[i].y < pathPoints[i+1].y) {
       rect(pathPoints[i].x, pathPoints[i].y, PATH_SIZE, pathPoints[i+1].y - pathPoints[i].y);
-      // prevents the player from placing a tower on the path
+      // prevents the player from placing a turret on the path
       let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i].y + (pathPoints[i+1].y - pathPoints[i].y)/2, PATH_SIZE, Math.abs(pathPoints[i+1].y - pathPoints[i].y));
-      for (let tower of towers) {
-        let theTower = Bodies.circle(tower.x, tower.y, tower.radius);
-        if (Matter.Collision.collides(thePath, theTower) !== null){
-          let index = towers.indexOf(tower);
-          towers.splice(index,1);
+      for (let turret of turrets) {
+        let theTurret = Bodies.circle(turret.x, turret.y, turret.radius);
+        if (Matter.Collision.collides(thePath, theTurret) !== null){
+          let index = turrets.indexOf(turret);
+          turrets.splice(index,1);
         }
       }
     }
     // creates the lines that go down
     else if (pathPoints[i].y > pathPoints[i+1].y) {
       rect(pathPoints[i].x, pathPoints[i+1].y, PATH_SIZE, pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE);
-      // prevents the player from placing a tower on the path
+      // prevents the player from placing a turret on the path
       let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i+1].y + (pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE)/2, PATH_SIZE, Math.abs(pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE));
-      for (let tower of towers) {
-        let theTower = Bodies.circle(tower.x, tower.y, tower.radius);
-        if (Matter.Collision.collides(thePath, theTower) !== null){
-          let index = towers.indexOf(tower);
-          towers.splice(index,1);
+      for (let turret of turrets) {
+        let theTurret = Bodies.circle(turret.x, turret.y, turret.radius);
+        if (Matter.Collision.collides(thePath, theTurret) !== null){
+          let index = turrets.indexOf(turret);
+          turrets.splice(index,1);
         }
       }
     }
@@ -310,18 +335,18 @@ function startWave() {
 
 function mouseClicked() {
   // initiates the game after the user clicks "start"
-   if (!gameStarted && mouseX < width/2 + width/8 && mouseX > width/2 - width/8 && mouseY < height/2 + 50 && mouseY > height/2 - 50) {
+  if (!gameStarted && mouseX < width/2 + width/8 && mouseX > width/2 - width/8 && mouseY < height/2 + 50 && mouseY > height/2 - 50) {
     gameStarted = true;
     generateStones();
     startWave();
     background("green");
   }
 
-  // spawns a tower at the user's mouse position after they click
-  if (towers.length < 5 && gameStarted) {
-    let aTower = new Tower(mouseX, mouseY);
-    towers.push(aTower);
-    selectedTower = aTower;
+  // spawns a turret at the user's mouse position after they click
+  if (turrets.length < 5 && gameStarted) {
+    let aTurret = new Turret(mouseX, mouseY);
+    turrets.push(aTurret);
+    selectedTower = aTurret;
   }
 }
 
@@ -379,12 +404,12 @@ function generateStones() {
   }
 }
 
-// rotates the tower left or right depending on what button is clicked
+// rotates the turret left or right depending on what button is clicked
 function keyPressed() {
   if (selectedTower && (key === 'r' || key === 'R')) {
-      selectedTower.direction.rotate(0.05);
+    selectedTower.direction.rotate(0.05);
   }
   else if (selectedTower && (key === 'l' || key === 'L')) {
-      selectedTower.direction.rotate(-0.05);
+    selectedTower.direction.rotate(-0.05);
   }
 }
