@@ -137,6 +137,9 @@ let towers = [];
 let bulletArray = [];
 let stonesArray = [];
 
+// booleans
+let gameStarted = false;
+
 // preloads the images needed for the game
 function preload() {
   mapImage = loadImage("tdmap.webp");
@@ -158,80 +161,94 @@ function setup() {
     {x: 1500, y: 500},
     {x: 1500, y: height}
   ];
-
-  generateStones();
-  startWave();
+  // start screen
+  if (!gameStarted) {
+    background("black");
+    stroke("white");
+    textAlign(CENTER, CENTER);
+    textSize(40);
+    text("Sohaib's Tower Defense Game", width/2, height/3);
+    noStroke();
+    fill("green");
+    rectMode(CENTER);
+    rect(width/2,height/2, width/8, 50);
+    fill("yellow");
+    text("Start", width/2, height/2);
+  }
 }
 
 function draw() {
-  background("green");
-  generatePath();
+  if (gameStarted) {
+    background("green");
+    generatePath();
 
-  // displays all stones within the array
-  for (let stone of stonesArray) {
-    stone.display();
-  }
-  
-  // displays all towers within the array
-  for (let tower of towers) {
-    tower.display();
-    // controls how often bullets are released
-    if (millis() > tower.lastShot + shotDuration) {
-      let bullet = new Bullet(tower.x, tower.y, tower.range, tower.direction.x, tower.direction.y);
-      bullet.x += tower.direction.x * 10;
-      bullet.y += tower.direction.y * 10;
-      bulletArray.push(bullet);
-      tower.lastShot = millis();
+    // displays all stones within the array
+    for (let stone of stonesArray) {
+      stone.display();
     }
-  }
-
-  // controls how often and how many enemies are spawned
-  if (millis() > lastSpawned + spawnDuration && totalSpawned < maxToSpawn) {
-    let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
-    enemies.push(aEnemy);
-    lastSpawned = millis();
-    totalSpawned ++;
-  }
-
-  // displays and moves enemies
-  for (let enemy of enemies) {  
-    enemy.move();  
-    enemy.display();
-  }
-
-  // displays and moves bullets
-  for (let bullet of bulletArray) {
-    bullet.update();
-    bullet.display();
-    // removes a bullet if it is off the screen
-    if (bullet.x > width || bullet.x < 0 || bullet.y > height || bullet.y < 0) {
-      let index = bulletArray.indexOf(bullet);
-      bulletArray.splice(index, 1);
-    }
-    // removes a bullet after it exceeds the tower's range
-    else if (dist(bullet.x, bullet.y, bullet.startX, bullet.startY) >= bullet.range){
-      let index = bulletArray.indexOf(bullet);
-      bulletArray.splice(index, 1);
-    }
-  }
-  // controls the tower and bullet collisions
-  for (let bullet of bulletArray) {
-    for (let enemy of enemies) {
-      let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
-      let theEnemy = Bodies.circle(enemy.x, enemy.y, enemy.radius);
-      if (Matter.Collision.collides(theBullet, theEnemy) !== null){
-        let indexB = bulletArray.indexOf(bullet);
-        bulletArray.splice(indexB, 1);
-        let indexE = enemies.indexOf(enemy);
-        enemies.splice(indexE, 1);
+    
+    // displays all towers within the array
+    for (let tower of towers) {
+      tower.display();
+      // controls how often bullets are released
+      if (millis() > tower.lastShot + shotDuration) {
+        let bullet = new Bullet(tower.x, tower.y, tower.range, tower.direction.x, tower.direction.y);
+        bullet.x += tower.direction.x * 10;
+        bullet.y += tower.direction.y * 10;
+        bulletArray.push(bullet);
+        tower.lastShot = millis();
       }
     }
-  }
+  
+    // controls how often and how many enemies are spawned
+    if (millis() > lastSpawned + spawnDuration && totalSpawned < maxToSpawn) {
+      let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
+      enemies.push(aEnemy);
+      lastSpawned = millis();
+      totalSpawned ++;
+    }
+  
+    // displays and moves enemies
+    for (let enemy of enemies) {  
+      enemy.move();  
+      enemy.display();
+    }
+  
+    // displays and moves bullets
+    for (let bullet of bulletArray) {
+      bullet.update();
+      bullet.display();
+      // removes a bullet if it is off the screen
+      if (bullet.x > width || bullet.x < 0 || bullet.y > height || bullet.y < 0) {
+        let index = bulletArray.indexOf(bullet);
+        bulletArray.splice(index, 1);
+      }
+      // removes a bullet after it exceeds the tower's range
+      else if (dist(bullet.x, bullet.y, bullet.startX, bullet.startY) >= bullet.range){
+        let index = bulletArray.indexOf(bullet);
+        bulletArray.splice(index, 1);
+      }
+    }
 
-  // begins a new wave after the previous one has been cleared
-  if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
-    currentWave ++;
-    startWave();
+    // controls the tower and bullet collisions
+    for (let bullet of bulletArray) {
+      for (let enemy of enemies) {
+        let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
+        let theEnemy = Bodies.circle(enemy.x, enemy.y, enemy.radius);
+        if (Matter.Collision.collides(theBullet, theEnemy) !== null){
+          let indexB = bulletArray.indexOf(bullet);
+          bulletArray.splice(indexB, 1);
+          let indexE = enemies.indexOf(enemy);
+          enemies.splice(indexE, 1);
+        }
+      }
+    }
+  
+    // begins a new wave after the previous one has been cleared
+    if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
+      currentWave ++;
+      startWave();
+    }
   }
 }
 
@@ -291,9 +308,17 @@ function startWave() {
   lastSpawned = millis();
 }
 
-// spawns a tower at the user's mouse position after they click
 function mouseClicked() {
-  if (towers.length < 5) {
+  // initiates the game after the user clicks "start"
+   if (!gameStarted && mouseX < width/2 + width/8 && mouseX > width/2 - width/8 && mouseY < height/2 + 50 && mouseY > height/2 - 50) {
+    gameStarted = true;
+    generateStones();
+    startWave();
+    background("green");
+  }
+
+  // spawns a tower at the user's mouse position after they click
+  if (towers.length < 5 && gameStarted) {
     let aTower = new Tower(mouseX, mouseY);
     towers.push(aTower);
     selectedTower = aTower;
@@ -340,7 +365,7 @@ function generateStones() {
             stonesArray.splice(index,1);
           }
         }
-        // checks the lines that go up
+        // checks the lines that go down
         else if (pathPoints[i].y > pathPoints[i+1].y) {
           let thePath = Bodies.rectangle(pathPoints[i].x + PATH_SIZE/2, pathPoints[i+1].y + (pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE)/2, PATH_SIZE, Math.abs(pathPoints[i].y - pathPoints[i+1].y + PATH_SIZE));
           let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
