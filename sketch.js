@@ -359,7 +359,7 @@ function generateStones() {
     theStone.x = random(0, width - theStone.w);
     theStone.y = random(0, height - theStone.h);
     stonesArray.push(theStone);
-    //prevents stones from spawning on eachother
+    // prevents stones from spawning on eachother
     let theStoneBody = Bodies.rectangle(theStone.x + theStone.w/2, theStone.y + theStone.h/2, theStone.w, theStone.h);
     for (let otherStone of stonesArray) {
       let theOtherStone = Bodies.rectangle(otherStone.x + otherStone.w/2, otherStone.y + otherStone.h/2, otherStone.w, otherStone.h);
