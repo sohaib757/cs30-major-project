@@ -10,7 +10,6 @@
 const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = Matter;
 const PATHS = 9;
 const PATH_SIZE = 50;
-const BASE_HP = 1000;
 
 // classes
 class Enemy {
@@ -36,7 +35,7 @@ class Enemy {
       rect(this.x, this.y - 15, 36, 5);
       // creates a green health bar that changes based on the ratio between current hp and max hp (starting hp)
       fill("green");
-      rect(this.x - 36/2 + (36 * (this.hp/this.maxHp))/2, this.y - 15, 36 * (this.hp/this.maxHp), 5);
+      rect(this.x - 36/2 + 36 * (this.hp/this.maxHp)/2, this.y - 15, 36 * (this.hp/this.maxHp), 5);
     }
   }
   
@@ -50,21 +49,26 @@ class Enemy {
       else if (this.x > nextPoint.x + PATH_SIZE/2) {
         this.x -= this.speed;
       }
-      if (this.y > nextPoint.y + PATH_SIZE/2) {
+      else if (this.y > nextPoint.y + PATH_SIZE/2) {
         this.y -= this.speed;
       }
       else if (this.y < nextPoint.y + PATH_SIZE/2) {
         this.y += this.speed;
       }
-      if (this.x === nextPoint.x + PATH_SIZE/2 && this.y === nextPoint.y + PATH_SIZE/2) {
+      else if (this.x === nextPoint.x + PATH_SIZE/2 && this.y === nextPoint.y + PATH_SIZE/2) {
         this.nextPointIndex += 1;
       }
     }
   }
 
-  // removes enemy off the screen if all hp is lost
+  // checks if the enemy has lost all of its hp
   isDead() {
     return this.hp <= 0;
+  }
+
+  // checks if the enemy has reached the player's base
+  isAtBase() {
+    return this.nextPointIndex === pathPoints.length;
   }
 }
 
@@ -80,6 +84,7 @@ class Turret {
     this.direction = createVector(-1,0);
   }
 
+  // draws the turret
   display() {
     noStroke();
     fill("blue");
@@ -126,12 +131,12 @@ class Bullet {
 }
 
 class Stone {
-  // places an image of a rock at a given coordinate
-  constructor(x,y) {
-    this.x = x;
-    this.y = y;
+  // places an image of a rock at a random coordinate
+  constructor() {
     this.w = random(50,70);
     this.h = random(50,70);
+    this.x = random(0, width - width/10 - this.w);
+    this.y = random(0, height - this.h);
   }
   display() {
     image(stoneImage, this.x, this.y, this.w, this.h);
@@ -148,6 +153,7 @@ let currentWave = 0;
 let totalSpawned = 0;
 let maxToSpawn = 0;
 let selectedTower = null;
+let baseHp = 1000;
 
 // arrays
 let enemies = [];
@@ -167,7 +173,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // coordinates for the path
-  pathPoints =[
+  pathPoints = [
     {x: 40, y: 0},
     {x: 40, y: 400},
     {x: 500, y: 400},
@@ -199,6 +205,11 @@ function draw() {
   if (gameStarted) {
     background("green");
     generatePath();
+    turretShop();
+    
+    // displays the base hp
+    fill("white");
+    text("Health: " + baseHp, width - width/12, height/15);
 
     // displays all stones within the array
     for (let stone of stonesArray) {
@@ -230,7 +241,13 @@ function draw() {
     for (let enemy of enemies) {  
       enemy.move();  
       enemy.display();
+      // removes enemy from the array if it is eliminated
       if (enemy.isDead()) {
+        let index = enemies.indexOf(enemy);
+        enemies.splice(index, 1);
+      }
+      else if (enemy.isAtBase()) {
+        baseHp -= enemy.hp;
         let index = enemies.indexOf(enemy);
         enemies.splice(index, 1);
       }
@@ -363,9 +380,7 @@ function generateStones() {
   let totalWanted = 10;
   while (stonesArray.length < totalWanted) {
     // places stone images on the map with random sizes
-    let theStone = new Stone(0, 0);
-    theStone.x = random(0, width - theStone.w);
-    theStone.y = random(0, height - theStone.h);
+    let theStone = new Stone();
     stonesArray.push(theStone);
     // prevents stones from spawning on eachother
     let theStoneBody = Bodies.rectangle(theStone.x + theStone.w/2, theStone.y + theStone.h/2, theStone.w, theStone.h);
@@ -420,4 +435,11 @@ function keyPressed() {
   else if (selectedTower && (key === 'l' || key === 'L')) {
     selectedTower.direction.rotate(-0.05);
   }
+}
+
+function turretShop() {
+  fill("grey");
+  rect(width - width/10, height/5, width/10, height/2);
+  fill("white");
+  text("Shop", width - width/10, height/5 + height/10);
 }
