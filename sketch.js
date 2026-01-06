@@ -21,16 +21,23 @@ class Enemy {
     this.speed = 1;
     this.radius = 10;
     this.nextPointIndex = 1;
-    this.hp = currentWave + 5;
+    this.maxHp = currentWave + 5;
+    this.hp = this.maxHp;
   }
   
   display() {
     noStroke();
     fill("red");
     circle(this.x, this.y, this.radius * 2);
-    rectMode(CENTER);
-    fill("green");
-    rect(this.x, this.y - 15, this.hp * 4, 5);
+    if (this.hp > 0) {
+      // creates a grey bar with a fixed width
+      rectMode(CENTER);
+      fill("grey");
+      rect(this.x, this.y - 15, 36, 5);
+      // creates a green health bar that changes based on the ratio between current hp and max hp (starting hp)
+      fill("green");
+      rect(this.x - 36/2 + (36 * (this.hp/this.maxHp))/2, this.y - 15, 36 * (this.hp/this.maxHp), 5);
+    }
   }
   
   // controls how enemies move along the path
@@ -263,17 +270,6 @@ function draw() {
       currentWave ++;
       startWave();
     }
-
-    // prevents turrets from being placed on top of eachother
-    for (let i = 0; i < turrets.length - 1; i++) {
-      let theTurret = Bodies.circle(turrets[i].x, turrets[i].y, turrets[i].radius);
-      for (let j = i; j < turrets.length - 1; j++) {
-        let otherTurret = Bodies.circle(turrets[j].x, turrets[j].y, turrets[j].radius);
-        if (Matter.Collision.collides(otherTurret, theTurret) !== null){
-          turrets.splice(turrets[j], 1);
-        }
-      }
-    }
   }
 }
 
@@ -347,6 +343,18 @@ function mouseClicked() {
     let aTurret = new Turret(mouseX, mouseY);
     turrets.push(aTurret);
     selectedTower = aTurret;
+  }
+  // prevents turrets from being placed on top of eachother
+  for (let turret of turrets){
+    let theTurret = Bodies.circle(turret.x, turret.y, turret.radius);
+    for (let otherTurret of turrets) {
+      let theOtherTurret = Bodies.circle(otherTurret.x, otherTurret.y, otherTurret.radius);
+      if (otherTurret !== turret) {
+        if (Matter.Collision.collides(theOtherTurret, theTurret) !== null) {
+          turrets.pop();
+        }
+      }
+    }
   }
 }
 
