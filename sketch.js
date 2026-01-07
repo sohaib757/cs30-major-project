@@ -441,5 +441,12 @@ function turretShop() {
   fill("grey");
   rect(width - width/10, height/5, width/10, height/2);
   fill("white");
-  text("Shop", width - width/10, height/5 + height/10);
+  text("Shop", width - width/20, height/5 - height/30);
+  rect(width - width/11, height/4 - height/25, width/12, height/6);
+  fill("black");
+  text("Turret 1", width - width/21, height/3 + height/40);
+  fill("blue");
+  circle(width - width/21, height/4 + height/30, 100);
+  fill("grey");
+  rect(width - width/12, height/3 - height/17, 50, 25);
 }
