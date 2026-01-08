@@ -163,6 +163,7 @@ let stonesArray = [];
 
 // booleans
 let gameStarted = false;
+let isPurchased = false;
 
 // preloads the images needed for the game
 function preload() {
@@ -355,8 +356,15 @@ function mouseClicked() {
     background("green");
   }
 
+  if (gameStarted && mouseX > width - width/11 && mouseX < width - width/11 + width/12 && mouseY < height/4 - height/25 + height/6 && mouseY > height/4 - height/25) {
+    isPurchased = true;
+  }
+  else {
+    isPurchased =  false;
+  }
+
   // spawns a turret at the user's mouse position after they click
-  if (turrets.length < 5 && gameStarted) {
+  if (turrets.length < 5 && isPurchased) {
     let aTurret = new Turret(mouseX, mouseY);
     turrets.push(aTurret);
     selectedTower = aTurret;
