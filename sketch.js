@@ -78,6 +78,7 @@ class Turret {
     this.x = x;
     this.y = y;
     this.radius = 20;
+    this.opacity = 255;
     this.lastShot = 0;
     this.range = 200;
     // turret intially faces the left direction
@@ -87,7 +88,7 @@ class Turret {
   // draws the turret
   display() {
     noStroke();
-    fill("blue");
+    fill(0, 0, 255, this.opacity);
     circle(this.x, this.y, this.radius * 2);
   
     // adjusts how the muzzle of the turret is drawn based on how the user decides to rotate the turret
@@ -216,10 +217,22 @@ function draw() {
     for (let stone of stonesArray) {
       stone.display();
     }
+
+    if (isPurchased) {
+      let aTurret = new Turret(mouseX, mouseY);
+      aTurret.opacity = 70;
+      if (turrets.length < 1) {
+        turrets.push(aTurret);
+        aTurret.display();
+      }
+    }
     
     // displays all turrets within the array
     for (let turret of turrets) {
-      turret.display();
+      if (!isPurchased) {
+        turret.opacity = 255;
+        turret.display();
+      }
       // controls how often bullets are released
       if (millis() > turret.lastShot + shotDuration) {
         let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x, turret.direction.y);
@@ -359,15 +372,13 @@ function mouseClicked() {
   if (gameStarted && mouseX > width - width/11 && mouseX < width - width/11 + width/12 && mouseY < height/4 - height/25 + height/6 && mouseY > height/4 - height/25) {
     isPurchased = true;
   }
-  else {
-    isPurchased =  false;
-  }
 
   // spawns a turret at the user's mouse position after they click
-  if (turrets.length < 5 && isPurchased) {
+  if (turrets.length < 5 && isPurchased && mouseX < width - width/10) {
     let aTurret = new Turret(mouseX, mouseY);
     turrets.push(aTurret);
     selectedTower = aTurret;
+    isPurchased = !isPurchased;
   }
   // prevents turrets from being placed on top of eachother
   for (let turret of turrets){
