@@ -153,7 +153,7 @@ let mapImage;
 let currentWave = 0;
 let totalSpawned = 0;
 let maxToSpawn = 0;
-let selectedTower = null;
+let purchasedTower = null;
 let baseHp = 1000;
 
 // arrays
@@ -211,6 +211,7 @@ function draw() {
     
     // displays the base hp
     fill("white");
+    textSize(width/50);
     text("Health: " + baseHp, width - width/12, height/15);
 
     // displays all stones within the array
@@ -219,20 +220,19 @@ function draw() {
     }
 
     if (isPurchased) {
-      let aTurret = new Turret(mouseX, mouseY);
-      aTurret.opacity = 70;
-      if (turrets.length < 1) {
-        turrets.push(aTurret);
-        aTurret.display();
+      if (purchasedTower === null) {
+        purchasedTower = new Turret(mouseX, mouseY);
+        purchasedTower.opacity = 70;
       }
+      purchasedTower.x = mouseX;
+      purchasedTower.y = mouseY;
+      purchasedTower.display();
     }
     
     // displays all turrets within the array
     for (let turret of turrets) {
-      if (!isPurchased) {
-        turret.opacity = 255;
-        turret.display();
-      }
+      turret.opacity = 255;
+      turret.display();
       // controls how often bullets are released
       if (millis() > turret.lastShot + shotDuration) {
         let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x, turret.direction.y);
@@ -375,10 +375,11 @@ function mouseClicked() {
 
   // spawns a turret at the user's mouse position after they click
   if (turrets.length < 5 && isPurchased && mouseX < width - width/10) {
-    let aTurret = new Turret(mouseX, mouseY);
+    let aTurret = new Turret(purchasedTower.x, purchasedTower.y);
     turrets.push(aTurret);
-    selectedTower = aTurret;
-    isPurchased = !isPurchased;
+    aTurret.direction = purchasedTower.direction;
+    isPurchased = false;
+    purchasedTower = null;
   }
   // prevents turrets from being placed on top of eachother
   for (let turret of turrets){
@@ -448,24 +449,26 @@ function generateStones() {
 
 // rotates the turret left or right depending on what button is clicked
 function keyPressed() {
-  if (selectedTower && (key === 'r' || key === 'R')) {
-    selectedTower.direction.rotate(0.05);
+  if (isPurchased && purchasedTower && (key === 'r' || key === 'R')) {
+    purchasedTower.direction.rotate(0.05);
   }
-  else if (selectedTower && (key === 'l' || key === 'L')) {
-    selectedTower.direction.rotate(-0.05);
+  else if (isPurchased && purchasedTower && (key === 'l' || key === 'L')) {
+    purchasedTower.direction.rotate(-0.05);
   }
 }
 
 function turretShop() {
   fill("grey");
-  rect(width - width/10, height/5, width/10, height/2);
+  rect(width - width/10, height/5, width/10, height/2 - height/15);
   fill("white");
+  textSize(width/50);
   text("Shop", width - width/20, height/5 - height/30);
   rect(width - width/11, height/4 - height/25, width/12, height/6);
   fill("black");
+  textSize(width/60);
   text("Turret 1", width - width/21, height/3 + height/40);
   fill("blue");
-  circle(width - width/21, height/4 + height/30, 100);
+  circle(width - width/21, height/4 + height/30, width/20);
   fill("grey");
-  rect(width - width/12, height/3 - height/17, 50, 25);
+  rect(width - width/12, height/3 - height/17, width/35, height/45);
 }
