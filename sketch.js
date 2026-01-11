@@ -214,6 +214,10 @@ function draw() {
     textSize(width/50);
     text("Health: " + baseHp, width - width/12, height/15);
 
+    // displays the wave count
+    fill("white");
+    text("Wave: " + currentWave, width - width/12, height/30);
+
     // displays all stones within the array
     for (let stone of stonesArray) {
       stone.display();
@@ -298,7 +302,6 @@ function draw() {
   
     // begins a new wave after the previous one has been cleared
     if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
-      currentWave ++;
       startWave();
     }
   }
@@ -356,7 +359,7 @@ function startWave() {
   currentWave ++;
   totalSpawned = 0;
   // randomly selects an amount of enemies to spawn based on wave number
-  maxToSpawn = random(5, currentWave + 4);
+  maxToSpawn = Math.floor(random(5, currentWave + 4));
   lastSpawned = millis();
 }
 
