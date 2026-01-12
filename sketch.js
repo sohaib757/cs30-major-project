@@ -10,6 +10,8 @@
 const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = Matter;
 const PATHS = 9;
 const PATH_SIZE = 50;
+const TURRET_COST = 50;
+const MAX_TURRETS = 5;
 
 // classes
 class Enemy {
@@ -83,6 +85,8 @@ class Turret {
     this.range = 200;
     // turret intially faces the left direction
     this.direction = createVector(-1,0);
+    this.upgradeDisplay = false;
+    this.nextUpgrade = 1;
   }
 
   // draws the turret
@@ -154,7 +158,8 @@ let currentWave = 0;
 let totalSpawned = 0;
 let maxToSpawn = 0;
 let purchasedTower = null;
-let baseHp = 1000;
+let baseHp = 100;
+let money = 125;
 
 // arrays
 let enemies = [];
@@ -212,18 +217,23 @@ function draw() {
     // displays the base hp
     fill("white");
     textSize(width/50);
-    text("Health: " + baseHp, width - width/12, height/15);
+    text("Health: " + baseHp, width - width/12, height/11);
 
     // displays the wave count
     fill("white");
     text("Wave: " + currentWave, width - width/12, height/30);
+
+    // displays money
+    fill("white");
+    text("Money: " + money, width - width/5, height/30);
 
     // displays all stones within the array
     for (let stone of stonesArray) {
       stone.display();
     }
 
-    if (isPurchased) {
+    // creates a temporary turret that the user can rotate and decide where to place
+    if (isPurchased && turrets.length < MAX_TURRETS) {
       if (purchasedTower === null) {
         purchasedTower = new Turret(mouseX, mouseY);
         purchasedTower.opacity = 70;
@@ -263,11 +273,13 @@ function draw() {
       if (enemy.isDead()) {
         let index = enemies.indexOf(enemy);
         enemies.splice(index, 1);
+        money += floor(random (15,30));
       }
       else if (enemy.isAtBase()) {
         baseHp -= enemy.hp;
         let index = enemies.indexOf(enemy);
         enemies.splice(index, 1);
+        money += floor(random(15,30));
       }
     }
   
@@ -303,6 +315,16 @@ function draw() {
     // begins a new wave after the previous one has been cleared
     if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
       startWave();
+    }
+  }
+
+  for (let turret of turrets) {
+    if (turret.upgradeDisplay) {
+      fill("yellow");
+      rect(turret.x, turret.y - 50, 100, 20);
+      textSize(10);
+      fill("black");
+      text("Upgrade " + turret.nextUpgrade, turret.x, turret.y - 50);
     }
   }
 }
@@ -359,7 +381,7 @@ function startWave() {
   currentWave ++;
   totalSpawned = 0;
   // randomly selects an amount of enemies to spawn based on wave number
-  maxToSpawn = Math.floor(random(5, currentWave + 4));
+  maxToSpawn = floor(random(5, currentWave + 4));
   lastSpawned = millis();
 }
 
@@ -372,12 +394,14 @@ function mouseClicked() {
     background("green");
   }
 
-  if (gameStarted && mouseX > width - width/11 && mouseX < width - width/11 + width/12 && mouseY < height/4 - height/25 + height/6 && mouseY > height/4 - height/25) {
+  // detects if the user clicks on the turret in the shop and purchases it
+  if (gameStarted && mouseX > width - width/11 && mouseX < width - width/11 + width/12 && mouseY < height/4 - height/25 + height/6 && mouseY > height/4 - height/25 && money >= TURRET_COST && turrets.length < MAX_TURRETS) {
     isPurchased = true;
+    money -= TURRET_COST;
   }
 
   // spawns a turret at the user's mouse position after they click
-  if (turrets.length < 5 && isPurchased && mouseX < width - width/10) {
+  if (turrets.length < MAX_TURRETS && isPurchased && mouseX < width - width/10) {
     let aTurret = new Turret(purchasedTower.x, purchasedTower.y);
     turrets.push(aTurret);
     aTurret.direction = purchasedTower.direction;
@@ -394,6 +418,15 @@ function mouseClicked() {
           turrets.pop();
         }
       }
+    }
+  }
+
+  for (let turret of turrets) {
+    if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
+      turret.upgradeDisplay = true;
+    }
+    else {
+      turret.upgradeDisplay = false;
     }
   }
 }
@@ -460,6 +493,7 @@ function keyPressed() {
   }
 }
 
+// creates and displays the turret shop (currently only one turret available for purchase)
 function turretShop() {
   fill("grey");
   rect(width - width/10, height/5, width/10, height/2 - height/15);
