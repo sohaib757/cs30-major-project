@@ -230,97 +230,101 @@ function draw() {
     fill("white");
     text("Money: " + money, width - width/5, height/30);
 
-    // displays all stones within the array
-    for (let stone of stonesArray) {
-      stone.display();
-    }
+    classes();
+  }
+}
 
-    // creates a temporary turret that the user can rotate and decide where to place
-    if (isPurchased && turrets.length < MAX_TURRETS) {
-      if (purchasedTower === null) {
-        purchasedTower = new Turret(mouseX, mouseY);
-        purchasedTower.opacity = 70;
-      }
-      purchasedTower.x = mouseX;
-      purchasedTower.y = mouseY;
-      purchasedTower.display();
+function classes() {
+  // displays all stones within the array
+  for (let stone of stonesArray) {
+    stone.display();
+  }
+  
+  // creates a temporary turret that the user can rotate and decide where to place
+  if (isPurchased && turrets.length < MAX_TURRETS) {
+    if (purchasedTower === null) {
+      purchasedTower = new Turret(mouseX, mouseY);
+      purchasedTower.opacity = 70;
     }
+    purchasedTower.x = mouseX;
+    purchasedTower.y = mouseY;
+    purchasedTower.display();
+  }
     
-    // displays all turrets within the array
-    for (let turret of turrets) {
-      turret.opacity = 255;
-      turret.display();
-      // controls how often bullets are released
-      if (millis() > turret.lastShot + shotDuration) {
-        let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x, turret.direction.y);
-        bullet.x += turret.direction.x * 10;
-        bullet.y += turret.direction.y * 10;
-        bulletArray.push(bullet);
-        turret.lastShot = millis();
-      }
+  // displays all turrets within the array
+  for (let turret of turrets) {
+    turret.opacity = 255;
+    turret.display();
+    // controls how often bullets are released
+    if (millis() > turret.lastShot + shotDuration) {
+      let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x, turret.direction.y);
+      bullet.x += turret.direction.x * 10;
+      bullet.y += turret.direction.y * 10;
+      bulletArray.push(bullet);
+      turret.lastShot = millis();
     }
+  }
   
-    // controls how often and how many enemies are spawned
-    if (millis() > lastSpawned + spawnDuration && totalSpawned < maxToSpawn) {
-      let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
-      enemies.push(aEnemy);
-      lastSpawned = millis();
-      totalSpawned ++;
-    }
+  // controls how often and how many enemies are spawned
+  if (millis() > lastSpawned + spawnDuration && totalSpawned < maxToSpawn) {
+    let aEnemy = new Enemy(pathPoints[0].x + PATH_SIZE/2, pathPoints[0].y);
+    enemies.push(aEnemy);
+    lastSpawned = millis();
+    totalSpawned ++;
+  }
   
-    // displays and moves enemies
-    for (let enemy of enemies) {  
-      enemy.move();  
-      enemy.display();
-      // removes enemy from the array if it is eliminated
-      if (enemy.isDead()) {
-        let index = enemies.indexOf(enemy);
-        enemies.splice(index, 1);
-        money += floor(random (15,30));
-      }
-      else if (enemy.isAtBase()) {
-        baseHp -= enemy.hp;
-        let index = enemies.indexOf(enemy);
-        enemies.splice(index, 1);
-        money += floor(random(15,30));
-      }
+  // displays and moves enemies
+  for (let enemy of enemies) {  
+    enemy.move();  
+    enemy.display();
+    // removes enemy from the array if it is eliminated
+    if (enemy.isDead()) {
+      let index = enemies.indexOf(enemy);
+      enemies.splice(index, 1);
+      money += floor(random (15,30));
     }
+    else if (enemy.isAtBase()) {
+      baseHp -= enemy.hp;
+      let index = enemies.indexOf(enemy);
+      enemies.splice(index, 1);
+      money += floor(random(15,30));
+    }
+  }
   
-    // displays and moves bullets
-    for (let bullet of bulletArray) {
-      bullet.update();
-      bullet.display();
-      // removes a bullet if it is off the screen
-      if (bullet.x > width || bullet.x < 0 || bullet.y > height || bullet.y < 0) {
-        let index = bulletArray.indexOf(bullet);
-        bulletArray.splice(index, 1);
-      }
-      // removes a bullet after it exceeds the turret's range
-      else if (dist(bullet.x, bullet.y, bullet.startX, bullet.startY) >= bullet.range){
-        let index = bulletArray.indexOf(bullet);
-        bulletArray.splice(index, 1);
-      }
+  // displays and moves bullets
+  for (let bullet of bulletArray) {
+    bullet.update();
+    bullet.display();
+    // removes a bullet if it is off the screen
+    if (bullet.x > width || bullet.x < 0 || bullet.y > height || bullet.y < 0) {
+      let index = bulletArray.indexOf(bullet);
+      bulletArray.splice(index, 1);
     }
-
-    // controls the turret and bullet collisions
-    for (let bullet of bulletArray) {
-      for (let enemy of enemies) {
-        let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
-        let theEnemy = Bodies.circle(enemy.x, enemy.y, enemy.radius);
-        if (Matter.Collision.collides(theBullet, theEnemy) !== null){
-          let indexB = bulletArray.indexOf(bullet);
-          bulletArray.splice(indexB, 1);
-          enemy.hp -= bullet.dmg;
-        }
-      }
-    }
-  
-    // begins a new wave after the previous one has been cleared
-    if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
-      startWave();
+    // removes a bullet after it exceeds the turret's range
+    else if (dist(bullet.x, bullet.y, bullet.startX, bullet.startY) >= bullet.range){
+      let index = bulletArray.indexOf(bullet);
+      bulletArray.splice(index, 1);
     }
   }
 
+  // controls the turret and bullet collisions
+  for (let bullet of bulletArray) {
+    for (let enemy of enemies) {
+      let theBullet = Bodies.circle(bullet.x, bullet.y, bullet.radius);
+      let theEnemy = Bodies.circle(enemy.x, enemy.y, enemy.radius);
+      if (Matter.Collision.collides(theBullet, theEnemy) !== null){
+        let indexB = bulletArray.indexOf(bullet);
+        bulletArray.splice(indexB, 1);
+        enemy.hp -= bullet.dmg;
+      }
+    }
+  }
+  
+  // begins a new wave after the previous one has been cleared
+  if (enemies.length === 0 && totalSpawned >= maxToSpawn) {
+    startWave();
+  }
+  
   // displays upgrade bar above the turret that the user selects
   for (let turret of turrets) {
     if (turret.upgradeDisplay && turret.nextUpgrade < 7) {
@@ -338,8 +342,9 @@ function draw() {
       textSize(10);
       text("Max Upgrade" , turret.x, turret.y - upgradeBarW/4);
     }
-  }
+  } 
 }
+
 
 // creates the pathway
 function generatePath() {
