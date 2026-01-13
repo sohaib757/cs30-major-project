@@ -87,6 +87,7 @@ class Turret {
     this.direction = createVector(-1,0);
     this.upgradeDisplay = false;
     this.nextUpgrade = 1;
+    this.upgadeCost = 150;
   }
 
   // draws the turret
@@ -160,6 +161,8 @@ let maxToSpawn = 0;
 let purchasedTower = null;
 let baseHp = 100;
 let money = 125;
+let upgradeBarW = 125;
+let upgradeBarH = 20;
 
 // arrays
 let enemies = [];
@@ -318,13 +321,22 @@ function draw() {
     }
   }
 
+  // displays upgrade bar above the turret that the user selects
   for (let turret of turrets) {
-    if (turret.upgradeDisplay) {
+    if (turret.upgradeDisplay && turret.nextUpgrade < 7) {
       fill("yellow");
-      rect(turret.x, turret.y - 50, 100, 20);
+      rectMode(CENTER);
+      rect(turret.x, turret.y - upgradeBarW/4, upgradeBarW, upgradeBarH);
       textSize(10);
       fill("black");
-      text("Upgrade " + turret.nextUpgrade, turret.x, turret.y - 50);
+      text("Upgrade " + turret.nextUpgrade + "   Cost : " + turret.upgadeCost, turret.x, turret.y - upgradeBarW/4);
+    }
+    else {
+      fill("grey");
+      rect(turret.x, turret.y - upgradeBarW/4, upgradeBarW/2, upgradeBarH);
+      fill("red");
+      textSize(10);
+      text("Max Upgrade" , turret.x, turret.y - upgradeBarW/4);
     }
   }
 }
@@ -395,7 +407,7 @@ function mouseClicked() {
   }
 
   // detects if the user clicks on the turret in the shop and purchases it
-  if (gameStarted && mouseX > width - width/11 && mouseX < width - width/11 + width/12 && mouseY < height/4 - height/25 + height/6 && mouseY > height/4 - height/25 && money >= TURRET_COST && turrets.length < MAX_TURRETS) {
+  if (purchasedTower === null && gameStarted && mouseX > width - width/11 && mouseX < width - width/11 + width/12 && mouseY < height/4 - height/25 + height/6 && mouseY > height/4 - height/25 && money >= TURRET_COST && turrets.length < MAX_TURRETS) {
     isPurchased = true;
     money -= TURRET_COST;
   }
@@ -421,12 +433,22 @@ function mouseClicked() {
     }
   }
 
+  // calls for upgrade bar to be shown if user selects a tower
   for (let turret of turrets) {
     if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
       turret.upgradeDisplay = true;
     }
-    else {
-      turret.upgradeDisplay = false;
+    // else {
+    //   turret.upgradeDisplay = false;
+    // }
+  }
+
+  // upgrades the turret if the user clicks the ugrade bar
+  for (let turret of turrets) {
+    if (money >= turret.upgadeCost && turret.upgradeDisplay && mouseX > turret.x - upgradeBarW/2 && mouseX < turret.x + upgradeBarW/2 && mouseY < turret.y - upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y - upgradeBarW/4 - upgradeBarH/2 && turret.nextUpgrade < 7) {
+      money -= turret.upgadeCost;
+      turret.upgadeCost = turret.upgadeCost + turret.nextUpgrade * 150;
+      turret.nextUpgrade += 1;
     }
   }
 }
