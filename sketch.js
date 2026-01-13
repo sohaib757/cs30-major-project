@@ -234,6 +234,7 @@ function draw() {
   }
 }
 
+// controls everything that involves the classes and the main functions of the game
 function classes() {
   // displays all stones within the array
   for (let stone of stonesArray) {
