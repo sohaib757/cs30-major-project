@@ -11,7 +11,7 @@ const { Engine, Bodies, Composite, Body, Vector, Render, Constraint, Events } = 
 const PATHS = 9;
 const PATH_SIZE = 50;
 const TURRET_COST = 50;
-const MAX_TURRETS = 5;
+const MAX_TURRETS = 10;
 
 // classes
 class Enemy {
@@ -22,7 +22,7 @@ class Enemy {
     this.speed = 1;
     this.radius = 10;
     this.nextPointIndex = 1;
-    this.maxHp = (15 + currentWave * 10);
+    this.maxHp = 15 + currentWave * 10;
     this.hp = this.maxHp;
   }
   
@@ -162,7 +162,7 @@ let totalSpawned = 0;
 let maxToSpawn = 0;
 let purchasedTower = null;
 let baseHp = 100;
-let money = 125;
+let money = 12500;
 let upgradeBarW = 125;
 let upgradeBarH = 20;
 
