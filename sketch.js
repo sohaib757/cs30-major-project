@@ -22,7 +22,7 @@ class Enemy {
     this.speed = 1;
     this.radius = 10;
     this.nextPointIndex = 1;
-    this.maxHp = currentWave + 5;
+    this.maxHp = (15 + currentWave * 10);
     this.hp = this.maxHp;
   }
   
@@ -83,11 +83,14 @@ class Turret {
     this.opacity = 255;
     this.lastShot = 0;
     this.range = 200;
+    this.shotDuration = 2000;
     // turret intially faces the left direction
     this.direction = createVector(-1,0);
     this.upgradeDisplay = false;
     this.nextUpgrade = 1;
     this.upgadeCost = 150;
+    this.damage = 15;
+    this.bulletSpeed = 1;
   }
 
   // draws the turret
@@ -109,7 +112,7 @@ class Turret {
 
 class Bullet {
   // creates a bullet that takes in a coordinate a range and a direction
-  constructor(x,y,range,dx,dy) {
+  constructor(x,y,range,dx,dy,dmg) {
     this.x = x;
     this.y = y;
     this.radius = 3;
@@ -118,7 +121,7 @@ class Bullet {
     this.startY = y;
     this.dx = dx;
     this.dy = dy;
-    this.dmg = 5;
+    this.dmg = dmg;
   }
 
   display() {
@@ -151,7 +154,6 @@ class Stone {
 
 // global variables
 let pathPoints;
-let shotDuration = 2000;
 let lastSpawned = 0;
 let spawnDuration = 1000;
 let mapImage;
@@ -231,6 +233,7 @@ function draw() {
     text("Money: " + money, width - width/5, height/30);
 
     classes();
+    endGame();
   }
 }
 
@@ -257,8 +260,8 @@ function classes() {
     turret.opacity = 255;
     turret.display();
     // controls how often bullets are released
-    if (millis() > turret.lastShot + shotDuration) {
-      let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x, turret.direction.y);
+    if (millis() > turret.lastShot + turret.shotDuration) {
+      let bullet = new Bullet(turret.x, turret.y, turret.range, turret.direction.x * turret.bulletSpeed, turret.direction.y * turret.bulletSpeed, turret.damage);
       bullet.x += turret.direction.x * 10;
       bullet.y += turret.direction.y * 10;
       bulletArray.push(bullet);
@@ -282,13 +285,13 @@ function classes() {
     if (enemy.isDead()) {
       let index = enemies.indexOf(enemy);
       enemies.splice(index, 1);
-      money += floor(random (15,30));
+      money += floor(random (5 + currentWave * 2, 10 + currentWave * 2));
     }
     else if (enemy.isAtBase()) {
       baseHp -= enemy.hp;
       let index = enemies.indexOf(enemy);
       enemies.splice(index, 1);
-      money += floor(random(15,30));
+      money += floor(random (5 + currentWave * 2, 10 + currentWave * 2));
     }
   }
   
@@ -336,8 +339,9 @@ function classes() {
       fill("black");
       text("Upgrade " + turret.nextUpgrade + "   Cost : " + turret.upgadeCost, turret.x, turret.y - upgradeBarW/4);
     }
-    else {
+    else if (turret.nextUpgrade === 7) {
       fill("grey");
+      rectMode(CENTER);
       rect(turret.x, turret.y - upgradeBarW/4, upgradeBarW/2, upgradeBarH);
       fill("red");
       textSize(10);
@@ -362,6 +366,7 @@ function generatePath() {
         if (Matter.Collision.collides(thePath, theTurret) !== null){
           let index = turrets.indexOf(turret);
           turrets.splice(index,1);
+          money += TURRET_COST;
         }
       }
     }
@@ -375,6 +380,7 @@ function generatePath() {
         if (Matter.Collision.collides(thePath, theTurret) !== null){
           let index = turrets.indexOf(turret);
           turrets.splice(index,1);
+          money += TURRET_COST;
         }
       }
     }
@@ -388,6 +394,7 @@ function generatePath() {
         if (Matter.Collision.collides(thePath, theTurret) !== null){
           let index = turrets.indexOf(turret);
           turrets.splice(index,1);
+          money += TURRET_COST;
         }
       }
     }
@@ -399,8 +406,12 @@ function startWave() {
   currentWave ++;
   totalSpawned = 0;
   // randomly selects an amount of enemies to spawn based on wave number
-  maxToSpawn = floor(random(5, currentWave + 4));
+  maxToSpawn = floor(random(currentWave + 5, 10 + currentWave * 2));
   lastSpawned = millis();
+  // rewards the player with a random amount of money for surviving an entire wave
+  if (currentWave>1) {
+    money += floor(random (5 + currentWave * 2, 10 + currentWave * 2));
+  }
 }
 
 function mouseClicked() {
@@ -439,22 +450,24 @@ function mouseClicked() {
     }
   }
 
-  // calls for upgrade bar to be shown if user selects a tower
-  for (let turret of turrets) {
-    if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
-      turret.upgradeDisplay = true;
-    }
-    // else {
-    //   turret.upgradeDisplay = false;
-    // }
-  }
-
   // upgrades the turret if the user clicks the ugrade bar
   for (let turret of turrets) {
     if (money >= turret.upgadeCost && turret.upgradeDisplay && mouseX > turret.x - upgradeBarW/2 && mouseX < turret.x + upgradeBarW/2 && mouseY < turret.y - upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y - upgradeBarW/4 - upgradeBarH/2 && turret.nextUpgrade < 7) {
       money -= turret.upgadeCost;
       turret.upgadeCost = turret.upgadeCost + turret.nextUpgrade * 150;
       turret.nextUpgrade += 1;
+      turret.shotDuration *= 0.93;
+      turret.bulletSpeed += 0.2;
+      turret.damage += 4;
+      turret.range += 7;
+    }
+  }
+
+  // calls for upgrade bar to be shown if user selects a tower
+  for (let turret of turrets) {
+    turret.upgradeDisplay = false;
+    if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
+      turret.upgradeDisplay = true;
     }
   }
 }
@@ -532,8 +545,20 @@ function turretShop() {
   fill("black");
   textSize(width/60);
   text("Turret 1", width - width/21, height/3 + height/40);
+  fill("green");
+  textSize(width/90);
+  text("Cost: " + TURRET_COST, width - width/15, height/4 - height/40);
   fill("blue");
   circle(width - width/21, height/4 + height/30, width/20);
   fill("grey");
   rect(width - width/12, height/3 - height/17, width/35, height/45);
+}
+
+function endGame() {
+  if (baseHp <= 0) {
+    gameStarted = false;
+    background("black");
+    fill("red");
+    text("You Lost.", width/2, height/2);
+  }
 }
