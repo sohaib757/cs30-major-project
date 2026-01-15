@@ -91,6 +91,8 @@ class Turret {
     this.upgadeCost = 150;
     this.damage = 15;
     this.bulletSpeed = 1;
+    this.sellDisplay = false;
+    this.totalSpentOnUpgrades = 0;
   }
 
   // draws the turret
@@ -162,7 +164,7 @@ let totalSpawned = 0;
 let maxToSpawn = 0;
 let purchasedTower = null;
 let baseHp = 100;
-let money = 12500;
+let money = 125000;
 let upgradeBarW = 125;
 let upgradeBarH = 20;
 
@@ -197,6 +199,7 @@ function setup() {
     {x: 1500, y: 500},
     {x: 1500, y: height}
   ];
+
   // start screen
   if (!gameStarted) {
     background("black");
@@ -339,6 +342,7 @@ function classes() {
       fill("black");
       text("Upgrade " + turret.nextUpgrade + "   Cost : " + turret.upgadeCost, turret.x, turret.y - upgradeBarW/4);
     }
+    // displays a bar indicating that the user can no longer upgrade the turret once 7 upgrades has been reached
     else if (turret.nextUpgrade === 7) {
       fill("grey");
       rectMode(CENTER);
@@ -346,6 +350,14 @@ function classes() {
       fill("red");
       textSize(10);
       text("Max Upgrade" , turret.x, turret.y - upgradeBarW/4);
+    }
+    if (turret.sellDisplay) {
+      fill("red");
+      rectMode(CENTER);
+      rect(turret.x, turret.y + upgradeBarW/4, upgradeBarW/3, upgradeBarH);
+      textSize(10);
+      fill("black");
+      text("Sell ", turret.x, turret.y + upgradeBarW/4);
     }
   } 
 }
@@ -454,12 +466,17 @@ function mouseClicked() {
   for (let turret of turrets) {
     if (money >= turret.upgadeCost && turret.upgradeDisplay && mouseX > turret.x - upgradeBarW/2 && mouseX < turret.x + upgradeBarW/2 && mouseY < turret.y - upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y - upgradeBarW/4 - upgradeBarH/2 && turret.nextUpgrade < 7) {
       money -= turret.upgadeCost;
+      turret.totalSpentOnUpgrades += turret.upgadeCost;
       turret.upgadeCost = turret.upgadeCost + turret.nextUpgrade * 150;
       turret.nextUpgrade += 1;
       turret.shotDuration *= 0.93;
       turret.bulletSpeed += 0.2;
       turret.damage += 4;
       turret.range += 7;
+    }
+    
+    else if (turret.sellDisplay && mouseX > turret.x - upgradeBarW/6 && mouseX < turret.x + upgradeBarW/6 && mouseY < turret.y + upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y + upgradeBarW/4 - upgradeBarH/2) {
+      money += TURRET_COST/2 + turret.totalSpentOnUpgrades/2;
     }
   }
 
@@ -468,6 +485,13 @@ function mouseClicked() {
     turret.upgradeDisplay = false;
     if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
       turret.upgradeDisplay = true;
+    }
+  }
+
+  for (let turret of turrets) {
+    turret.sellDisplay = false;
+    if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
+      turret.sellDisplay = true;
     }
   }
 }
@@ -554,6 +578,7 @@ function turretShop() {
   rect(width - width/12, height/3 - height/17, width/35, height/45);
 }
 
+// ends the game once the user loses (hp < 0)
 function endGame() {
   if (baseHp <= 0) {
     gameStarted = false;
