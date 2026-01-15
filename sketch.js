@@ -164,7 +164,7 @@ let totalSpawned = 0;
 let maxToSpawn = 0;
 let purchasedTower = null;
 let baseHp = 100;
-let money = 125000;
+let money = 125;
 let upgradeBarW = 125;
 let upgradeBarH = 20;
 
@@ -477,6 +477,8 @@ function mouseClicked() {
     
     else if (turret.sellDisplay && mouseX > turret.x - upgradeBarW/6 && mouseX < turret.x + upgradeBarW/6 && mouseY < turret.y + upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y + upgradeBarW/4 - upgradeBarH/2) {
       money += TURRET_COST/2 + turret.totalSpentOnUpgrades/2;
+      let index = turrets.indexOf(turret);
+      turrets.splice(turret,1);
     }
   }
 
@@ -548,13 +550,27 @@ function generateStones() {
   }
 }
 
-// rotates the turret left or right depending on what button is clicked
 function keyPressed() {
+  // rotates the turret left or right depending on what button is clicked
   if (isPurchased && purchasedTower && (key === 'r' || key === 'R')) {
     purchasedTower.direction.rotate(0.05);
   }
   else if (isPurchased && purchasedTower && (key === 'l' || key === 'L')) {
     purchasedTower.direction.rotate(-0.05);
+  }
+
+  // restarts the game if the user presses r after they lose
+  if (baseHp <= 0 && (key === "r" || key === "R")) {
+    gameStarted = true;
+    baseHp = 100;
+    money = 125;
+    currentWave = 0;
+    for (let i = turrets.length - 1; i >= 0; i--) {
+      turrets.splice(i,1);
+    }
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      enemies.splice(i,1);
+    }   
   }
 }
 
@@ -584,6 +600,9 @@ function endGame() {
     gameStarted = false;
     background("black");
     fill("red");
+    textSize(width/6);
     text("You Lost.", width/2, height/2);
+    textSize(width/18);
+    text("Press R to restart.", width/2, height/2 + height/6);
   }
 }
