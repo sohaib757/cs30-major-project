@@ -164,7 +164,7 @@ let totalSpawned = 0;
 let maxToSpawn = 0;
 let purchasedTower = null;
 let baseHp = 100;
-let money = 1000000;
+let money = 125;
 let upgradeBarW = 125;
 let upgradeBarH = 20;
 
@@ -185,7 +185,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+  createCanvas(1920, 1080);
   // coordinates for the path
   pathPoints = [
     {x: 40, y: 0},
@@ -238,12 +238,12 @@ function draw() {
     classes();
     endGame();
 
-  // rotates the turret left or right depending on what button is clicked
-  if (isPurchased && purchasedTower && keyIsDown(82)) {
-    purchasedTower.direction.rotate(0.03);
+    // rotates the turret left or right depending on what button is clicked
+    if (isPurchased && purchasedTower && keyIsDown(82)) {
+      purchasedTower.direction.rotate(0.03);
     }
-  else if (isPurchased && purchasedTower && keyIsDown(76)) {
-    purchasedTower.direction.rotate(-0.03);
+    else if (isPurchased && purchasedTower && keyIsDown(76)) {
+      purchasedTower.direction.rotate(-0.03);
     }
   }
 }
@@ -498,6 +498,7 @@ function mouseClicked() {
     }
   }
 
+  // calls for sell bar to be shown if user selects a tower
   for (let turret of turrets) {
     turret.sellDisplay = false;
     if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
