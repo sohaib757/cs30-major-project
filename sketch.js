@@ -185,7 +185,7 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(1920, 1080);
+  createCanvas(1912, 954);
   // coordinates for the path
   pathPoints = [
     {x: 40, y: 0},
