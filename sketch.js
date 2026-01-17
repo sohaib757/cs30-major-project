@@ -93,7 +93,7 @@ class Turret {
     this.radius = TURRET_RADIUS;
     this.opacity = 255;
     this.lastShot = 0;
-    this.range = TURRET_RADIUS;
+    this.range = TURRET_RANGE;
     this.shotDuration = TURRET_COOLDOWN;
     // turret intially faces the left direction
     this.direction = createVector(-1,0);
@@ -527,6 +527,7 @@ function generateStones() {
     // places stone images on the map with random sizes
     let theStone = new Stone();
     stonesArray.push(theStone);
+
     // prevents stones from spawning on eachother
     let theStoneBody = Bodies.rectangle(theStone.x + theStone.w/2, theStone.y + theStone.h/2, theStone.w, theStone.h);
     for (let otherStone of stonesArray) {
@@ -537,6 +538,17 @@ function generateStones() {
         }
       }
     }
+      
+    // prevents stones from spawning on the ui (top right)
+    for (let stone of stonesArray) {
+      let uiBody = Bodies.rectangle(width/2, height/14, width, height/5);
+      let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
+        if (Matter.Collision.collides(uiBody, theStone) !== null) {
+          let index = stonesArray.indexOf(stone);
+          stonesArray.splice(index,1);
+      }
+    }
+
     // prevents stones from spawning on the pathway
     for (let i = 0; i < PATHS; i++) {
       for (let stone of stonesArray) {
