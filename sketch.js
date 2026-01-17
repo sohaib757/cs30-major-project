@@ -12,6 +12,17 @@ const PATHS = 9;
 const PATH_SIZE = 50;
 const TURRET_COST = 50;
 const MAX_TURRETS = 10;
+const ENEMY_SPEED = 1;
+const ENEMY_RADIUS = 10;
+const ENEMY_HP = 15;
+const ENEMY_HP_SCALE = 10;
+const TURRET_RADIUS = 20;
+const TURRET_RANGE = 200;
+const TURRET_COOLDOWN = 2000;
+const TURRET_DAMAGE = 15;
+const BULLET_SPEED = 1;
+const STARTING_UPGRADE_COST = 150;
+const BULLET_RADIUS = 3;
 
 // classes
 class Enemy {
@@ -19,10 +30,10 @@ class Enemy {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.speed = 1;
-    this.radius = 10;
+    this.speed = ENEMY_SPEED;
+    this.radius = ENEMY_RADIUS;
     this.nextPointIndex = 1;
-    this.maxHp = 15 + currentWave * 10;
+    this.maxHp = ENEMY_HP + currentWave * ENEMY_HP_SCALE;
     this.hp = this.maxHp;
   }
   
@@ -79,18 +90,18 @@ class Turret {
   constructor(x,y) {
     this.x = x;
     this.y = y;
-    this.radius = 20;
+    this.radius = TURRET_RADIUS;
     this.opacity = 255;
     this.lastShot = 0;
-    this.range = 200;
-    this.shotDuration = 2000;
+    this.range = TURRET_RADIUS;
+    this.shotDuration = TURRET_COOLDOWN;
     // turret intially faces the left direction
     this.direction = createVector(-1,0);
     this.upgradeDisplay = false;
     this.nextUpgrade = 1;
-    this.upgadeCost = 150;
-    this.damage = 15;
-    this.bulletSpeed = 1;
+    this.upgradeCost = STARTING_UPGRADE_COST;
+    this.damage = TURRET_DAMAGE;
+    this.bulletSpeed = BULLET_SPEED;
     this.sellDisplay = false;
     this.totalSpentOnUpgrades = 0;
   }
@@ -117,7 +128,7 @@ class Bullet {
   constructor(x,y,range,dx,dy,dmg) {
     this.x = x;
     this.y = y;
-    this.radius = 3;
+    this.radius = BULLET_RADIUS;
     this.range = range;
     this.startX = x;
     this.startY = y;
@@ -348,7 +359,7 @@ function classes() {
       rect(turret.x, turret.y - upgradeBarW/4, upgradeBarW, upgradeBarH);
       textSize(10);
       fill("black");
-      text("Upgrade " + turret.nextUpgrade + "   Cost : " + turret.upgadeCost, turret.x, turret.y - upgradeBarW/4);
+      text("Upgrade " + turret.nextUpgrade + "   Cost : " + turret.upgradeCost, turret.x, turret.y - upgradeBarW/4);
     }
     // displays a bar indicating that the user can no longer upgrade the turret once 7 upgrades has been reached
     else if (turret.nextUpgrade === 7) {
@@ -359,6 +370,7 @@ function classes() {
       textSize(10);
       text("Max Upgrade" , turret.x, turret.y - upgradeBarW/4);
     }
+    // displays a sell bar below the turret that the user selects
     if (turret.sellDisplay) {
       fill("red");
       rectMode(CENTER);
@@ -470,12 +482,12 @@ function mouseClicked() {
     }
   }
 
-  // upgrades the turret if the user clicks the ugrade bar
   for (let turret of turrets) {
-    if (money >= turret.upgadeCost && turret.upgradeDisplay && mouseX > turret.x - upgradeBarW/2 && mouseX < turret.x + upgradeBarW/2 && mouseY < turret.y - upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y - upgradeBarW/4 - upgradeBarH/2 && turret.nextUpgrade < 7) {
-      money -= turret.upgadeCost;
-      turret.totalSpentOnUpgrades += turret.upgadeCost;
-      turret.upgadeCost = turret.upgadeCost + turret.nextUpgrade * 150;
+    // upgrades the turret if the user clicks the ugrade bar
+    if (money >= turret.upgradeCost && turret.upgradeDisplay && mouseX > turret.x - upgradeBarW/2 && mouseX < turret.x + upgradeBarW/2 && mouseY < turret.y - upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y - upgradeBarW/4 - upgradeBarH/2 && turret.nextUpgrade < 7) {
+      money -= turret.upgradeCost;
+      turret.totalSpentOnUpgrades += turret.upgradeCost;
+      turret.upgradeCost = turret.upgradeCost + turret.nextUpgrade * 150;
       turret.nextUpgrade += 1;
       turret.shotDuration *= 0.93;
       turret.bulletSpeed += 0.2;
@@ -483,6 +495,7 @@ function mouseClicked() {
       turret.range += 7;
     }
     
+    // sells the turret if the user clicks the sell bar
     else if (turret.sellDisplay && mouseX > turret.x - upgradeBarW/6 && mouseX < turret.x + upgradeBarW/6 && mouseY < turret.y + upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y + upgradeBarW/4 - upgradeBarH/2) {
       money += TURRET_COST/2 + turret.totalSpentOnUpgrades/2;
       let index = turrets.indexOf(turret);
