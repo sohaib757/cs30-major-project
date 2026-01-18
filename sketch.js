@@ -469,8 +469,22 @@ function mouseClicked() {
     isPurchased = false;
     purchasedTower = null;
   }
+
+  // prevents turrets from being placed on the stones
+  for (let turret of turrets) {
+    for (let stone of stonesArray) {
+      let theTurret = Bodies.circle(turret.x, turret.y, turret.radius);
+      let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
+      if (Matter.Collision.collides(theTurret, theStone) !== null) {
+        let index = turrets.indexOf(turret);
+        turrets.splice(index,1);
+        money += TURRET_COST;
+      }
+    }
+  }
+  
   // prevents turrets from being placed on top of eachother
-  for (let turret of turrets){
+  for (let turret of turrets) {
     let theTurret = Bodies.circle(turret.x, turret.y, turret.radius);
     for (let otherTurret of turrets) {
       let theOtherTurret = Bodies.circle(otherTurret.x, otherTurret.y, otherTurret.radius);
@@ -543,9 +557,9 @@ function generateStones() {
     for (let stone of stonesArray) {
       let uiBody = Bodies.rectangle(width/2, height/14, width, height/5);
       let theStone = Bodies.rectangle(stone.x + stone.w/2, stone.y + stone.h/2, stone.w, stone.h);
-        if (Matter.Collision.collides(uiBody, theStone) !== null) {
-          let index = stonesArray.indexOf(stone);
-          stonesArray.splice(index,1);
+      if (Matter.Collision.collides(uiBody, theStone) !== null) {
+        let index = stonesArray.indexOf(stone);
+        stonesArray.splice(index,1);
       }
     }
 
