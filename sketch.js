@@ -188,11 +188,19 @@ let stonesArray = [];
 // booleans
 let gameStarted = false;
 let isPurchased = false;
+let musicIsOn = true;
 
-// preloads the images needed for the game
+// preloads the images and audios needed for the game
 function preload() {
-  mapImage = loadImage("tdmap.webp");
+  musicImage = loadImage("download.png");
+  noMusicImage = loadImage("download (1).png");
   stoneImage = loadImage("rock.png");
+  startScreenImage = loadImage("startscreen.jpg");
+  coin = createAudio("coin.mp3");
+  wow = createAudio("wow.mp3");
+  gameMusic = createAudio("backgroundmusic.mp3");
+  damage = createAudio("damage.mp3");
+  gameOver = createAudio("wompwomp.mp3");
 }
 
 function setup() {
@@ -211,24 +219,49 @@ function setup() {
     {x: 1500, y: height}
   ];
 
+  // adjusts volume for background music
+  gameMusic.volume(0.2);
+
   // start screen
   if (!gameStarted) {
-    background("black");
+    // displays start screen image
+    background(startScreenImage);
+
+    // displays title and start button
     stroke("white");
     textAlign(CENTER, CENTER);
-    textSize(40);
-    text("Sohaib's Tower Defense Game", width/2, height/3);
+    textSize(60);
+    text("Sohaib's Tower Defense Game", width/2, height/2 - 75);
     noStroke();
     fill("green");
-    rectMode(CENTER);
-    rect(width/2,height/2, width/8, 50);
-    fill("yellow");
-    text("Start", width/2, height/2);
+    textSize(40);
+    text("START", width/2, height/2 + height/500);
+
+    // displays instructions
+    rectMode(CENTER)
+    fill(0, 180);
+    rect(width/2, height/2 + 135, width/5, height/5, 20);
+    fill("white");
+    textSize(22);
+    text("HOW TO PLAY", width/2, height/2 + 70);
+    textSize(16);
+    text("Purchase a turret in the shop and place it on the map", width/2, height/2 + 100);
+    text("Use R / L  to rotate the turret's direction", width/2, height/2 + 125);
+    text("Defend your base from incoming enemies", width/2, height/2 + 150);
+    text("Earn more money by defeating enemies", width/2, height/2 + 175);
+    text("Click speaker icon to toggle music", width/2, height/2 + 200);
   }
 }
 
 function draw() {
   if (gameStarted) {
+    // controls when the background music loops
+    if (musicIsOn) {
+      gameMusic.play();
+    }
+    else {
+      gameMusic.stop();
+    }
     background("green");
     generatePath();
     turretShop();
@@ -248,6 +281,14 @@ function draw() {
 
     classes();
     endGame();
+
+    // displays image that indicates whether music is on or off at the bottom left of the screen
+    if (musicIsOn) {
+      image(musicImage, 0, height - height/12, height/11, height/11);
+    }
+    else {
+      image(noMusicImage, 0, height - height/12, height/11, height/11);
+    }
 
     // rotates the turret left or right depending on what button is clicked
     if (isPurchased && purchasedTower && keyIsDown(82)) {
@@ -308,12 +349,15 @@ function classes() {
       let index = enemies.indexOf(enemy);
       enemies.splice(index, 1);
       money += floor(random (5 + currentWave * 2, 10 + currentWave * 2));
+      coin.play();
     }
     else if (enemy.isAtBase()) {
       baseHp -= enemy.hp;
+      damage.play();
       let index = enemies.indexOf(enemy);
       enemies.splice(index, 1);
       money += floor(random (5 + currentWave * 2, 10 + currentWave * 2));
+      coin.play();
     }
   }
   
@@ -399,6 +443,7 @@ function generatePath() {
           let index = turrets.indexOf(turret);
           turrets.splice(index,1);
           money += TURRET_COST;
+          coin.play();
         }
       }
     }
@@ -413,6 +458,7 @@ function generatePath() {
           let index = turrets.indexOf(turret);
           turrets.splice(index,1);
           money += TURRET_COST;
+          coin.play();
         }
       }
     }
@@ -427,6 +473,7 @@ function generatePath() {
           let index = turrets.indexOf(turret);
           turrets.splice(index,1);
           money += TURRET_COST;
+          coin.play();
         }
       }
     }
@@ -435,7 +482,10 @@ function generatePath() {
 
 // begins the wave
 function startWave() {
-  currentWave ++;
+  currentWave ++; 
+  if (currentWave > 1) {
+    wow.play();
+  }
   totalSpawned = 0;
   // randomly selects an amount of enemies to spawn based on wave number
   maxToSpawn = floor(random(currentWave + 5, 10 + currentWave * 2));
@@ -443,6 +493,7 @@ function startWave() {
   // rewards the player with a random amount of money for surviving an entire wave
   if (currentWave>1) {
     money += floor(random (5 + currentWave * 2, 10 + currentWave * 2));
+    coin.play();
   }
 }
 
@@ -479,6 +530,7 @@ function mouseClicked() {
         let index = turrets.indexOf(turret);
         turrets.splice(index,1);
         money += TURRET_COST;
+        coin.play();
       }
     }
   }
@@ -512,6 +564,7 @@ function mouseClicked() {
     // sells the turret if the user clicks the sell bar
     else if (turret.sellDisplay && mouseX > turret.x - upgradeBarW/6 && mouseX < turret.x + upgradeBarW/6 && mouseY < turret.y + upgradeBarW/4 + upgradeBarH/2 && mouseY > turret.y + upgradeBarW/4 - upgradeBarH/2) {
       money += TURRET_COST/2 + turret.totalSpentOnUpgrades/2;
+      coin.play();
       let index = turrets.indexOf(turret);
       turrets.splice(index,1);
     }
@@ -531,6 +584,11 @@ function mouseClicked() {
     if (mouseX < turret.x + turret.radius && mouseX > turret.x - turret.radius && mouseY > turret.y - turret.radius && mouseY < turret.y + turret.radius) {
       turret.sellDisplay = true;
     }
+  }
+
+  // flips from music on to music off if user clicks on it
+  if (mouseX >= 0 && mouseX <= height/11 && mouseY >= height - height/12 && mouseY <= height) {    
+    musicIsOn = !musicIsOn;
   }
 }
 
@@ -645,6 +703,8 @@ function turretShop() {
 // ends the game once the user loses (hp < 0)
 function endGame() {
   if (baseHp <= 0) {
+    gameMusic.stop();
+    gameOver.play();
     gameStarted = false;
     background("black");
     fill("red");
