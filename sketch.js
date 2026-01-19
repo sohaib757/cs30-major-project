@@ -238,7 +238,7 @@ function setup() {
     text("START", width/2, height/2 + height/500);
 
     // displays instructions
-    rectMode(CENTER)
+    rectMode(CENTER);
     fill(0, 180);
     rect(width/2, height/2 + 135, width/5, height/5, 20);
     fill("white");
