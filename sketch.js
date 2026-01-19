@@ -426,7 +426,6 @@ function classes() {
   } 
 }
 
-
 // creates the pathway
 function generatePath() {
   rectMode(CORNER);
