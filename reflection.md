@@ -8,6 +8,7 @@
 - Focus on more extra for experts features rather than just doing the bare minimum.
 - Have more fun doing it.
 - Focus more on the appearance of the game not just functionality.
+- Make a better UI
 
 ## Did you complete everything in your needs to have list?
 - Yes, I did complete everything in my needs to have list.
